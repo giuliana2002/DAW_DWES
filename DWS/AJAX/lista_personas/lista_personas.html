@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Ejercicio Listado Personas. A</script>JAX</title>
+	<style type="text/css">
+		body {
+			background-color: #f0f0f0;
+			font-family: 'Arial', sans-serif;
+			color: #333;
+		}
+
+		h3 {
+			color: #444;
+			text-align: center;
+			font-size: 28px;
+			margin-top: 20px;
+		}
+
+		.formPersonas {
+			visibility: hidden;
+			position: absolute;
+			top: 20%;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 11;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			border-radius: 8px;
+			padding: 1.5em;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			width: 300px;
+		}
+
+
+		.formPersonas input[type="text"] {
+			width: 100%;
+			padding: 0.5em;
+			margin-top: 0.5em;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+
+		.formPersonas .btn {
+			display: flex;
+			justify-content: space-between;
+			margin-top: 1.5em;
+		}
+
+		.formPersonas .btn button {
+			padding: 0.5em 1em;
+			border: none;
+			border-radius: 4px;
+			background-color: #007bff;
+			color: white;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+
+		#btNuevaPersona {
+			display: block;
+			margin: 1em auto;
+			padding: 0.5em 1em;
+			border: none;
+			border-radius: 4px;
+			background-color: #28a745;
+			color: white;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+
+		#btNuevaPersona:hover {
+			background-color: #218838;
+		}
+
+		table {
+			width: 80%;
+			margin: 1em auto;
+			border-collapse: collapse;
+			background-color: #fff;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		table,
+		th,
+		td {
+			border: 1px solid #ddd;
+			padding: 0.5em;
+		}
+
+		button {
+			padding: 0.5em 1em;
+			border: none;
+			border-radius: 4px;
+			background-color: #007bff;
+			color: white;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			align-items: center;
+		}
+
+		button:hover {
+			background-color: #0056b3;
+		}
+	</style>
+	<script type="text/javascript">
+		var url = "http://localhost/AJAX/lista_personas/servidor.php";
+		var modoEdicion = false;
+
+		window.onload = () => {
+			peticionAJAX("POST", url, { servicio: "listar" }, (datos) => {
+				pintarPersonas(datos);
+			});
+
+			document.getElementById("btNuevaPersona").onclick = function () {
+				limpiarFormulario();
+				document.getElementById("formPersonas").style.visibility = "visible";
+				modoEdicion = false;
+			};
+
+			document.getElementById("btAnade").onclick = function () {
+				if (modoEdicion) {
+					modificarPersona();
+				} else {
+					aniadirPersonas();
+				}
+			};
+
+			document.getElementById("btCancelar").onclick = function () {
+				document.getElementById("formPersonas").style.visibility = "hidden";
+			};
+		};
+
+		const aniadirPersonas = () => {
+			let ingresar = {
+				servicio: "insertar",
+				dni: document.querySelector("#dni").value,
+				nombre: document.querySelector("#nombre").value,
+				apellidos: document.querySelector("#apellidos").value,
+			};
+			peticionAJAX("POST", url, ingresar, (datos) => {
+				pintarPersonas(datos);
+				document.getElementById("formPersonas").style.visibility = "hidden";
+			});
+		};
+
+		function modificarPersona() {
+			let ingresar = {
+				servicio: "modificar",
+				dni: document.querySelector("#dni").value,
+				nombre: document.querySelector("#nombre").value,
+				apellidos: document.querySelector("#apellidos").value,
+				id: document.getElementById("btAnade").dataset.idper
+			};
+			peticionAJAX("PUT", url, ingresar, (datos) => {
+				pintarPersonas(datos);
+				document.getElementById("formPersonas").style.visibility = "hidden";
+			});
+		}
+
+		function borrarPersonas() {
+			let borrar = {
+				servicio: "borrar",
+				id: this.dataset.idper,
+			};
+			if (confirm(`Desea borrar a ${this.dataset.nomper}`)) {
+				peticionAJAX("DELETE", url, borrar, (datos) => {
+					pintarPersonas(datos);
+				});
+			}
+		}
+
+		function editaPersona() {
+			document.querySelector("#dni").value = this.dataset.dni;
+			document.querySelector("#nombre").value = this.dataset.nomper;
+			document.querySelector("#apellidos").value = this.dataset.apeper;
+			document.querySelector('#formPersonas').style.visibility = 'visible';
+
+			modoEdicion = true;
+			document.getElementById("btAnade").innerText = "Modificar";
+			document.getElementById("btAnade").dataset.idper = this.dataset.idper;
+		}
+
+		function pintarPersonas(datos) {
+			let cuerpo = document.querySelector("#filas_tabla");
+			cuerpo.innerHTML = "";
+			for (persona of datos) {
+				var fila = document.createElement("tr");
+				for (i in persona) {
+					var columna = document.createElement("td");
+					columna.innerHTML = persona[i];
+					fila.append(columna);
+				}
+
+				columna = document.createElement("td");
+				let boton = document.createElement("button");
+				boton.dataset.idper = persona.ID;
+				boton.dataset.nomper = persona.NOMBRE;
+				boton.dataset.dni = persona.DNI;
+				boton.onclick = borrarPersonas;
+				boton.innerText = "Borrar";
+				columna.append(boton);
+				fila.append(columna);
+
+				columna = document.createElement("td");
+				boton = document.createElement("button");
+				boton.dataset.idper = persona.ID;
+				boton.dataset.nomper = persona.NOMBRE;
+				boton.dataset.apeper = persona.APELLIDOS;
+				boton.dataset.dni = persona.DNI;
+				boton.onclick = editaPersona;
+				boton.innerText = "Editar";
+				columna.append(boton);
+
+				fila.append(columna);
+				cuerpo.append(fila);
+			}
+		}
+
+		function limpiarFormulario() {
+			document.querySelector("#dni").value = "27473339T";
+			document.querySelector("#nombre").value = "Marco Elio";
+			document.querySelector("#apellidos").value = "García Gomariz";
+			document.getElementById("btAnade").innerText = "Añadir";
+		}
+
+		const peticionAJAX = (metodo, url, servicio, callback) => {
+			const peticion = new XMLHttpRequest();
+			peticion.open(metodo, url, true);
+			peticion.setRequestHeader("Content-Type", "application/json");
+			peticion.send(JSON.stringify(servicio));
+			peticion.onreadystatechange = () => {
+				if (peticion.readyState == 4 && peticion.status == 200) {
+					callback(JSON.parse(peticion.responseText));
+				}
+			};
+		};
+	</script>
+</head>
+
+<body>
+	<h3>Registro de Usuarios con un formulario</h3>
+
+	<div id="formPersonas" class="formPersonas">
+		<fieldset>
+			<legend>Alta en el servicio</legend>
+			<div>
+				<label for="dni">DNI</label>
+				<input type="text" id="dni" size="10" maxlength="9" value="27473339T" />
+			</div>
+			<div>
+				<label for="nombre">Nombre</label>
+				<input type="text" id="nombre" value="Marco Elio" />
+			</div>
+			<div>
+				<label for="apellidos">Apellidos</label>
+				<input type="text" id="apellidos" size="40" value="García Gomariz" />
+			</div>
+			<div class="btn">
+				<button id="btAnade">Añadir </button>
+				<button id="btCancelar">Cancelar </button>
+			</div>
+		</fieldset>
+	</div>
+
+	<br />
+	<button class="btn" id="btNuevaPersona">Nueva persona</button>
+	<br><br>
+	<table id="tabla_personas" border="1">
+		<tr>
+			<th>ID</th>
+			<th>DNI</th>
+			<th>NOMBRE</th>
+			<th>APELLIDOS</th>
+			<th>Borrar</th>
+			<th>Editar</th>
+		</tr>
+		<tbody id="filas_tabla">
+		</tbody>
+	</table>
+
+	<br><br>
+</body>
+
+</html>

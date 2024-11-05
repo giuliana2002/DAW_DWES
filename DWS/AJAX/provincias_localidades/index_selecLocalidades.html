@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Provincias Localidades</title>
+
+  <script type="text/javascript">
+    window.onload = () => {
+
+      cargaProvincias();
+      cargaLocalidades(2);
+
+      document.getElementById("provincia").onchange = cargaLocalidades(this.value);
+
+    }
+    function cargaProvincias() {
+      var peticion = new XMLHttpRequest();
+
+      peticion.onreadystatechange = ponerProvincias;
+      peticion.open("GET", "http://localhost/AJAX/provincias_localidades/servidor.php?servicio=provincias");
+      peticion.send();
+
+      function ponerProvincias() {
+        if (peticion.readyState == 4 && peticion.status == 200) {
+          let json = JSON.parse(peticion.responseText);
+          for (i = 0; i < json.length; i++) {
+            let option = document.createElement("option");
+            option.innerText = json[i].NOMBRE;
+            option.setAttribute("value", json[i].CODIGO);
+            document.getElementById("provincia").appendChild(option);
+          }
+        }
+      }
+    }
+
+    function cargaLocalidades(num) {
+      var peticion = new XMLHttpRequest();
+
+      peticion.onreadystatechange = ponerLocalidades;
+      peticion.open("GET", "http://localhost/AJAX/provincias_localidades/servidor.php?servicio=localidades&codigop=${num}");
+      peticion.send();
+
+      function ponerLocalidades() {
+        if (peticion.readyState == 4 && peticion.status == 200) {
+          let localidades = document.getElementById("localidad");
+          localidades.innerHTML = "";
+          let json = JSON.parse(peticion.responseText);
+          for (i = 0; i < json.length; i++) {
+            let option = document.createElement("option");
+            option.innerText = json[i].NOMBRE;
+            option.setAttribute("value", json[i].CODIGO);
+            localidades.appendChild(option);
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <h2>Ejemplo proyecto web con JAVA y AJAX</h2>
+
+  <label for="provincia">Provincia:</label>
+  <select id="provincia"></select>
+  <br /><br />
+
+  <label for="localidad">Localidad</label>
+  <select id="localidad">
+    <option value="-1">Seleccione Provincia</option>
+  </select>
+  <br /><br />
+</body>
+
+</html>
