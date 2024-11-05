@@ -12,34 +12,52 @@
         const obtenerUsuariosP = () => {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    resolve('Usuarios Obtenidos');
+                    if (id_grupo) {
+                        const usuarios = [
+                            { id: 1, idnombre: "Usuario1", localidad: "Madrid" },
+                            { id: 2, idnombre: 'Usuario2', localidad: 'Barcelona' },
+                            { id: 3, idnombre: 'Usuario3', localidad: 'Valencia' }
+                        ];
+                        resolve(usuarios);
+                    } else {
+                        reject('No group ID provided');
+                    }
                 }, 3000);
             });
         }
         const obtenerClientesP = () => {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    resolve('Clientes Obtenidos');
-                }, 2000);
+                    resolve(['Cliente1', 'Cliente2', 'Cliente3']);
+                }, 300);
             });
         }
         const obtenerProductosP = () => {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    resolve('Productos Obtenidos');
+                    resolve(['Producto1', 'Producto2', 'Producto3']);
                 }, 500);
             });
         }
 
-
         // consumimos las promesas:
-
         obtenerUsuariosP()
-            .then(obtenerClientesP)
-            .then(obtenerUsuariosP)
+            .then(result => {
+                console.log('Usuarios:', result);
+                return obtenerClientesP();
+            })
+            .then(result => {
+                console.log('Clientes:', result);
+                return obtenerProductosP();
+            })
+            .then(result => {
+                console.log('Productos:', result);
+            })
             .catch(err => console.log(err));
-
     </script>
 </body>
 
 </html>
+<script>
+
+</script>
