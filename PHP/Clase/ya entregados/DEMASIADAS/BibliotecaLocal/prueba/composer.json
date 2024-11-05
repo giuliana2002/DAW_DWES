@@ -1,0 +1,19 @@
+{
+    "name": "daw_m/prueba",
+    "autoload": {
+        "psr-4": {
+            "DawM\\Prueba\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Giuliana Castillo"
+        }
+    ],
+    "scripts": {
+        "dev": "php index.php"
+    },
+    "require": {
+        "monolog/monolog": "^3.7"
+    }
+}

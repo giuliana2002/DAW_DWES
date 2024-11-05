@@ -1,0 +1,17 @@
+{
+    "name": "daw_m/composer",
+    "autoload": {
+        "psr-4": {
+            "DawM\\Composer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Giuliana",
+            "email": "gcastillo@safareyes.es"
+        }
+    ],
+    "require": {
+        "fpdf/fpdf": "^1.86"
+    }
+}
