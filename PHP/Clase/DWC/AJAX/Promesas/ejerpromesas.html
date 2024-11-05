@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        const obtenerUsuariosP = () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve('Usuarios Obtenidos');
+                }, 3000);
+            });
+        }
+        const obtenerClientesP = () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve('Clientes Obtenidos');
+                }, 2000);
+            });
+        }
+        const obtenerProductosP = () => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve('Productos Obtenidos');
+                }, 500);
+            });
+        }
+
+
+        // consumimos las promesas:
+
+        obtenerUsuariosP()
+            .then(obtenerClientesP)
+            .then(obtenerUsuariosP)
+            .catch(err => console.log(err));
+
+    </script>
+</body>
+
+</html>
