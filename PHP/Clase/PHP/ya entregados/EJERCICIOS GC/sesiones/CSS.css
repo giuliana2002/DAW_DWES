@@ -1,0 +1,56 @@
+body {
+    background-image: url('https://static.vecteezy.com/system/resources/previews/001/254/680/non_2x/cinema-background-concept-vector.jpg');
+    background-size: cover;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 50px;
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+select,
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    background-color: #ff4500;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ff6347;
+}
+
+a {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: #ff4500;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
