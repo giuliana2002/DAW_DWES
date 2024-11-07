@@ -1,0 +1,6 @@
+Clase: zumba
+Día: jueves
+Hora: 19:30
+Plazas Totales: 20
+Plazas Disponibles: 19
+Plazas Reservadas: 1
