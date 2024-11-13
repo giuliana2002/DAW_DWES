@@ -5,6 +5,14 @@ if (!isset($_SESSION['usuario'])) {
     exit;
 }
 include 'horario.php';
+
+$usuario = $_SESSION['usuario'];
+$archivo_reservas = "reservas_{$usuario}.json";
+
+// Leer el estado actual de las reservas del archivo del usuario
+if (file_exists($archivo_reservas)) {
+    $horario_clases = json_decode(file_get_contents($archivo_reservas), true);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,7 +28,9 @@ include 'horario.php';
     <form action="procesar_formulario.php" method="post">
         <input type="hidden" name="clase" value="yoga">
         <label>Día:
-            <select name="dia" id="dia"></select>
+            <select name="dia" id="dia">
+                <!-- Los días se actualizarán dinámicamente con JavaScript -->
+            </select>
         </label>
         <input type="submit" name="accion" value="Reservar">
         <input type="submit" name="accion" value="Liberar">

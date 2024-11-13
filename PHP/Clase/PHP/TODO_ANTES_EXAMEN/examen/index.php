@@ -1,5 +1,9 @@
 <?php
 session_start();
+session_destroy();
+$aux = session_id();
+print_r(nl2br("\n El SID actual antes de iniciar el código de cierre de sesion es: " . session_id() . "\n"));
+
 ?>
 <!DOCTYPE html>
 <html>

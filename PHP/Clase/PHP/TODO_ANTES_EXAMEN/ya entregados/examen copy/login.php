@@ -3,7 +3,8 @@ session_start();
 
 $usuarios = array(
     'admin' => 'admin',
-    'usuario' => 'usuario'
+    'usuario' => 'usuario',
+    'maxigiu' => 'maxigiu'
 );
 
 if (isset($_POST['usuario']) && isset($_POST['contrasena'])) {
@@ -11,6 +12,7 @@ if (isset($_POST['usuario']) && isset($_POST['contrasena'])) {
     $contrasena = $_POST['contrasena'];
 
     if (isset($usuarios[$usuario]) && $usuarios[$usuario] === $contrasena) {
+        session_regenerate_id(true);
         $_SESSION['usuario'] = $usuario;
         header('Location: main.php');
         exit;
@@ -18,4 +20,3 @@ if (isset($_POST['usuario']) && isset($_POST['contrasena'])) {
         echo "Usuario o contraseña incorrectos.";
     }
 }
-?>

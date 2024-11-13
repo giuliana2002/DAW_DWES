@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Plantilla</title>
+
+	<style type="text/css">
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #bee6dd;
+		}
+
+		h3 {
+			color: #333;
+			font-size: 1.5em;
+			text-align: center;
+		}
+
+		p {
+			color: #333;
+			font-size: 1.3em;
+			text-align: center;
+			padding: 1em;
+
+		}
+
+		#texto {
+			width: 700px;
+			height: 500px;
+			border: 1px solid blue;
+			padding: 0.4em;
+		}
+
+		#clave {
+			width: 200px;
+			border: 2px solid rgb(107, 110, 107);
+			padding: 0.4em;
+		}
+
+		#datosguardar {
+			border: 2px solid rgb(107, 110, 107);
+			cursor: pointer;
+
+			width: 200px;
+		}
+
+		#guardar {
+			border: 5px solid rgb(255, 255, 255);
+			font-weight: bold;
+			margin: 1.1em;
+			padding: .2em;
+			cursor: pointer;
+			background-color: rgb(144, 188, 238);
+		}
+
+		#negrita {
+			border: 2px solid rgb(0, 0, 0);
+			margin: 1.1em;
+			font-weight: bold;
+			padding: .2em;
+			cursor: pointer;
+			background-color: rgb(156, 163, 156);
+		}
+
+		#cursiva {
+			border: 2px solid rgb(37, 37, 37);
+			font-style: oblique;
+			font-weight: bold;
+			margin: 1.1em;
+			padding: .2em;
+			cursor: pointer;
+			background-color: rgb(212, 228, 126);
+		}
+
+		#subrayado {
+			border: 2px solid rgb(82, 82, 82);
+			margin: 1.1em;
+			text-decoration: underline;
+			font-weight: bold;
+			padding: .2em;
+			cursor: pointer;
+			background-color: rgb(203, 144, 238);
+		}
+
+		#color {
+			margin: 1.1em;
+			color: rgb(0, 0, 0);
+			border: 2px solid rgb(131, 127, 127);
+			background-color: rgb(255, 0, 0);
+			align-items: center;
+			font-weight: bold;
+			margin: 1.1em;
+			padding: .2em;
+		}
+
+		#texto {
+			width: 700px;
+			height: 500px;
+			border: 2px solid rgb(39, 121, 39);
+			background-color: rgb(185, 240, 185);
+		}
+	</style>
+
+	<script type="text/javascript">
+
+
+		function ponerNegrita() {
+			document.execCommand("bold", false, null);
+			e.preventDefault();
+		}
+
+		function ponerCursiva(e) {
+			document.execCommand("italic", false, null);
+			e.preventDefault();
+		}
+		function ponersubrayado(e) {
+			document.execCommand("underline", false, null);
+			e.preventDefault();
+		}
+
+		function ponerColor(e) {
+			document.execCommand("foreColor", false, "red");
+			e.preventDefault();
+		}
+
+		function guardarDato(e) {
+			var etiqueta = document.getElementById("clave").value;
+			var contenido = document.getElementById("texto").innerHTML;
+			var datosguardar = document.getElementById("datosguardar");
+			var option = document.createElement("option");
+			option.text = etiqueta;
+			datosguardar.add(option);
+
+			localStorage.setItem(etiqueta, contenido);
+			datosguardar.addEventListener("change", function () {
+				var selectedOption = datosguardar.options[datosguardar.selectedIndex].text;
+				document.getElementById("texto").innerHTML = localStorage.getItem(selectedOption);
+			});
+
+		}
+
+		window.onload = function () {
+			texto = document.getElementById("texto");
+			document.getElementById("guardar").addEventListener("click", guardarDato);
+			document.getElementById("negrita").addEventListener("mousedown", ponerNegrita);
+			document.getElementById("cursiva").addEventListener("mousedown", ponerCursiva);
+			document.getElementById("subrayado").addEventListener("mousedown", ponersubrayado);
+			document.getElementById("color").addEventListener("mousedown", ponerColor);
+		};
+	</script>
+</head>
+
+<body>
+
+	<h3>Procesador de Textos</h3>
+	<p>Nombre del texto <input type="text" id="clave"></p>
+	<p>Textos Guardados <select id="datosguardar" multiple style></select></p>
+	<p><span id="guardar">Guardar</span></p>
+	<p>
+		<span id="negrita">Negrita</span>
+		<span id="cursiva">Cursiva</span>
+		<span id="subrayado">Subrayado</span>
+		<span id="color">Color</span>
+	</p>
+	<div id="texto" contentEditable="true" spellcheck="true">
+		Esto es un texto de prueba para no tener que estar escribiendo.
+	</div>
+	<p id="sal"></p>
+
+</body>
+
+</html>

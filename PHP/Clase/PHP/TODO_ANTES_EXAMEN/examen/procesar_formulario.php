@@ -6,6 +6,14 @@ if (!isset($_SESSION['usuario'])) {
 }
 include 'horario.php';
 
+$usuario = $_SESSION['usuario'];
+$archivo_reservas = "reservas_{$usuario}.json";
+
+// Leer el estado actual de las reservas del archivo del usuario
+if (file_exists($archivo_reservas)) {
+    $horario_clases = json_decode(file_get_contents($archivo_reservas), true);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clase'], $_POST['dia'], $_POST['accion'])) {
     $clase = $_POST['clase'];
     $dia = $_POST['dia'];
@@ -25,6 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clase'], $_POST['dia'
             $resultado = "No hay reservas activas para $clase el $dia.";
         }
     }
+
+    // Guardar el estado actualizado de las reservas en el archivo del usuario
+    file_put_contents($archivo_reservas, json_encode($horario_clases));
 
     $confirmacion = "Clase: $clase\nDía: $dia\nHora: " . $horario_clases[$clase][$dia]['hora'] . "\nPlazas Totales: " . $horario_clases[$clase][$dia]['plazas_totales'] . "\nPlazas Disponibles: " . $horario_clases[$clase][$dia]['plazas_disponibles'] . "\nPlazas Reservadas: " . $horario_clases[$clase][$dia]['plazas_reservadas'];
     file_put_contents("confirmacion.txt", $confirmacion);

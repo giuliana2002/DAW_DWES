@@ -63,12 +63,25 @@
 			localStorage.clear();
 		}
 
+		function contarVisitas() {
+			if (localStorage.getItem("visitas") === null) {
+				localStorage.setItem("visitas", 1);
+			} else {
+				var n = parseInt(localStorage.getItem("visitas"));
+				n++;
+				localStorage.setItem("visitas", n);
+			}
+			document.getElementById("nvisitas").innerHTML = "Número de visitas: " + localStorage.getItem("visitas");
+		}
+
+
 		document.addEventListener("DOMContentLoaded", function () {
 			document.getElementById("btGuardar").addEventListener("click", guardarDato);
 			document.getElementById("btMostrar").addEventListener("click", mostrarDato);
 			document.getElementById("btContenido").addEventListener("click", mostrarContenido);
 			document.getElementById("btBorrarDato").addEventListener("click", borrarDato);
 			document.getElementById("btBorrarTodo").addEventListener("click", borrarTodo);
+			contarVisitas();
 		});
 	</script>
 </head>
