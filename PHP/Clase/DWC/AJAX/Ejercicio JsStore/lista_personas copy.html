@@ -91,12 +91,44 @@
 
     // Función para confirmar el borrado de una persona
     async function confirmarBorrado(id) {
-      if (confirm("¿Estás seguro de que deseas borrar a esta persona?")) {
+      const personas = await getAllPersonas();
+      const persona = personas.find(p => p.id === id);
+      if (persona && confirm(`¿Estás seguro de que deseas borrar a ${persona.nombre}?`)) {
         await deletePersona(id);
         cargarPersonas();
       }
     }
 
+
+    // Función para editar una persona
+    async function editarPersona(id) {
+      const personas = await getAllPersonas();
+      const persona = personas.find(p => p.id === id);
+      if (persona) {
+        document.getElementById("dni").value = persona.dni;
+        document.getElementById("nombre").value = persona.nombre;
+        document.getElementById("apellidos").value = persona.apellidos;
+        document.getElementById("fnacimiento").value = new Date(persona.fnacimiento).toISOString().split('T')[0];
+        document.getElementById("estatura").value = persona.estatura;
+        document.getElementById("formPersonas").style.visibility = "visible";
+
+        document.getElementById("btAnade").onclick = async function () {
+          const updatedPersona = {
+            dni: document.getElementById("dni").value,
+            nombre: document.getElementById("nombre").value,
+            apellidos: document.getElementById("apellidos").value,
+            fnacimiento: new Date(document.getElementById("fnacimiento").value),
+            estatura: parseFloat(document.getElementById("estatura").value)
+          };
+          await updatePersona(id, updatedPersona);
+          cargarPersonas();
+          document.getElementById("formPersonas").style.visibility = "hidden";
+        };
+      }
+    }
+
+    window.editarPersona = editarPersona;
+    window.confirmarBorrado = confirmarBorrado;
     window.onload = cargarPersonas;
   </script>
 

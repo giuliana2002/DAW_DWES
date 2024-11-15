@@ -11,8 +11,7 @@ const database = {
                 nombre: { notNull: true, dataType: "string" },
                 apellidos: { dataType: "string", default: "" },
                 fnacimiento: { notNull: true, dataType: "date_time" },
-                estatura: { dataType: "number" },
-                imagen: { dataType: "string" }
+                estatura: { dataType: "number" }
             }
         }
     ]

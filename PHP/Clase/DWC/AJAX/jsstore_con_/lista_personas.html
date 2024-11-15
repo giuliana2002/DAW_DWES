@@ -63,6 +63,7 @@
             <td>${persona.apellidos || ""}</td>
             <td>${persona.fnacimiento ? new Date(persona.fnacimiento).toLocaleDateString() : ""}</td>
             <td>${persona.estatura || ""}</td>
+            <td>${persona.estado_civil || ""}</td>
             <td><img src="${persona.imagen}" alt="Imagen de ${persona.nombre}" width="50" height="50"></td>
             <td><button onclick="editarPersona(${persona.id})">Editar</button></td>
             <td><button onclick="confirmarBorrado(${persona.id})">Borrar</button></td>
@@ -110,6 +111,7 @@
         apellidos: document.getElementById("apellidos").value,
         fnacimiento: new Date(document.getElementById("fnacimiento").value),
         estatura: parseFloat(document.getElementById("estatura").value),
+        estado_civil: document.getElementById("estado_civil").value,
         imagen: imagen
       };
       await insertPersona(nuevaPersona);
@@ -137,6 +139,7 @@
         document.getElementById("apellidos").value = persona.apellidos;
         document.getElementById("fnacimiento").value = new Date(persona.fnacimiento).toISOString().split('T')[0];
         document.getElementById("estatura").value = persona.estatura;
+        document.getElementById("estado_civil").value = persona.estado_civil;
         document.getElementById("imgPreview").src = persona.imagen;
         document.getElementById("formPersonas").style.visibility = "visible";
         document.getElementById("btAnade").innerText = "Actualizar";
@@ -150,6 +153,7 @@
             apellidos: document.getElementById("apellidos").value,
             fnacimiento: new Date(document.getElementById("fnacimiento").value),
             estatura: parseFloat(document.getElementById("estatura").value),
+            estado_civil: document.getElementById("estado_civil").value,
             imagen: imagen
           };
           await updatePersona(id, updatedPersona);
@@ -193,9 +197,17 @@
         <input type="number" id="estatura" step="0.01" value="1.75" />
       </div>
       <div>
+        <label for="estado_civil">Estado Civil</label>
+        <select id="estado_civil">
+          <option value="soltero">Soltero</option>
+          <option value="casado">Casado</option>
+          <option value="divorciado">Divorciado</option>
+          <option value="viudo">Viudo</option>
+        </select>
+      </div>
+      <div>
         <label for="imagen">Imagen</label>
         <input type="file" id="imagen" />
-
       </div>
       <div>
         <label for="imgPreview">Vista previa de la imagen</label>
@@ -220,6 +232,7 @@
       <th>Apellidos</th>
       <th>Fecha de Nacimiento</th>
       <th>Estatura</th>
+      <th>Estado Civil</th>
       <th>Imagen</th>
       <th>Borrar</th>
       <th>Editar</th>

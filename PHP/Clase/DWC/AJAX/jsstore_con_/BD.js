@@ -12,7 +12,8 @@ const database = {
                 apellidos: { dataType: "string", default: "" },
                 fnacimiento: { notNull: true, dataType: "date_time" },
                 estatura: { dataType: "number" },
-                imagen: { dataType: "string" }
+                imagen: { dataType: "string" },
+                estado_civil: { dataType: "string" }
             }
         }
     ]
