@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Ejercicio Listado de Personas</title>
+  <style type="text/css">
+    h3 {
+      color: red;
+    }
+
+    .formPersonas {
+      visibility: hidden;
+      position: absolute;
+      top: 20%;
+      left: 20%;
+      z-index: 11;
+      background-color: pink;
+      border: 2px solid maroon;
+      border-radius: 15px;
+      padding: 1em;
+      color: red;
+    }
+
+    .formPersonas div label {
+      display: block;
+      margin-top: .5em;
+    }
+
+    .formPersonas .btn {
+      display: block;
+      margin-top: 1em;
+    }
+
+    .ver {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+
+  <script src="jsstore/jsstore.min.js"></script>
+  <script src="jsstore/jsstore.worker.min.js"></script>
+
+  <script type="module">
+    import { insertPersona, getAllPersonas, updatePersona, deletePersona } from './BD.js';
+
+    // Cargar todas las personas al inicio
+    async function cargarPersonas() {
+      const personas = await getAllPersonas();
+      mostrarTablaPersonas(personas);
+    }
+
+    // Función para mostrar las personas en la tabla
+    function mostrarTablaPersonas(personas) {
+      const tbody = document.getElementById("filas_tabla");
+      tbody.innerHTML = "";
+      personas.forEach(persona => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+            <td>${persona.id}</td>
+            <td>${persona.dni}</td>
+            <td>${persona.nombre}</td>
+            <td>${persona.apellidos || ""}</td>
+            <td>${persona.fnacimiento || ""}</td>
+            <td>${persona.estatura || ""}</td>
+            <td><button onclick="editarPersona(${persona.id})">Editar</button></td>
+            <td><button onclick="confirmarBorrado(${persona.id})">Borrar</button></td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    // Mostrar el formulario para añadir una nueva persona
+    document.getElementById("btNuevaPersona").onclick = function () {
+      document.getElementById("formPersonas").style.visibility = "visible";
+    };
+
+    // Añadir una nueva persona a la base de datos
+    document.getElementById("btAnade").onclick = async function () {
+      const nuevaPersona = {
+        dni: document.getElementById("dni").value,
+        nombre: document.getElementById("nombre").value,
+        apellidos: document.getElementById("apellidos").value,
+        fnacimiento: new Date(document.getElementById("fnacimiento").value),
+        estatura: parseFloat(document.getElementById("estatura").value)
+      };
+      await insertPersona(nuevaPersona);
+      cargarPersonas();
+      document.getElementById("formPersonas").style.visibility = "hidden";
+    };
+
+    // Función para confirmar el borrado de una persona
+    async function confirmarBorrado(id) {
+      const personas = await getAllPersonas();
+      const persona = personas.find(p => p.id === id);
+      if (persona && confirm(`¿Estás seguro de que deseas borrar a ${persona.nombre}?`)) {
+        await deletePersona(id);
+        cargarPersonas();
+      }
+    }
+
+
+    // Función para editar una persona
+    async function editarPersona(id) {
+      const personas = await getAllPersonas();
+      const persona = personas.find(p => p.id === id);
+      if (persona) {
+        document.getElementById("dni").value = persona.dni;
+        document.getElementById("nombre").value = persona.nombre;
+        document.getElementById("apellidos").value = persona.apellidos;
+        document.getElementById("fnacimiento").value = new Date(persona.fnacimiento).toISOString().split('T')[0];
+        document.getElementById("estatura").value = persona.estatura;
+        document.getElementById("formPersonas").style.visibility = "visible";
+
+        document.getElementById("btAnade").onclick = async function () {
+          const updatedPersona = {
+            dni: document.getElementById("dni").value,
+            nombre: document.getElementById("nombre").value,
+            apellidos: document.getElementById("apellidos").value,
+            fnacimiento: new Date(document.getElementById("fnacimiento").value),
+            estatura: parseFloat(document.getElementById("estatura").value)
+          };
+          await updatePersona(id, updatedPersona);
+          cargarPersonas();
+          document.getElementById("formPersonas").style.visibility = "hidden";
+        };
+      }
+    }
+
+    window.editarPersona = editarPersona;
+    window.confirmarBorrado = confirmarBorrado;
+    window.onload = cargarPersonas;
+  </script>
+
+</head>
+
+<body>
+  <h3>Registro de Personas</h3>
+
+  <div id="formPersonas" class="formPersonas">
+    <fieldset>
+      <legend>Alta de Persona</legend>
+      <div>
+        <label for="dni">DNI</label>
+        <input type="text" id="dni" size="10" maxlength="9" value="27473339T" />
+      </div>
+      <div>
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" value="Marco Elio" />
+      </div>
+      <div>
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" size="40" value="García Gomariz" />
+      </div>
+      <div>
+        <label for="fnacimiento">Fecha de Nacimiento</label>
+        <input type="date" id="fnacimiento" value="1990-01-01" />
+      </div>
+      <div>
+        <label for="estatura">Estatura</label>
+        <input type="number" id="estatura" step="0.01" value="1.75" />
+      </div>
+      <div class="btn">
+        <button id="btAnade">Añadir</button>
+        <button id="btCancelar"
+          onclick="document.getElementById('formPersonas').style.visibility = 'hidden'">Cancelar</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <br />
+  <button class="btn" id="btNuevaPersona">Nueva Persona</button>
+  <br><br>
+  <table id="tabla_personas" border="1">
+    <tr>
+      <th>ID</th>
+      <th>DNI</th>
+      <th>Nombre</th>
+      <th>Apellidos</th>
+      <th>Fecha de Nacimiento</th>
+      <th>Estatura</th>
+      <th>Borrar</th>
+      <th>Editar</th>
+    </tr>
+    <tbody id="filas_tabla"></tbody>
+  </table>
+
+  <br><br>
+</body>
+
+</html>
