@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+.font-h1 {
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    font-size: 200px;
+}
+
+.font-header-items {
+    font-family: 'Roboto', sans-serif;
+    color: #FFFFFF;
+    font-size: 18px;
+}
+
+.Bannerarriba {
+    background-color: #ce1414;
+}
+
+.btn-red {
+    background-color: #6d57f6;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+
+.presentation-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+}
+
+.font-h1 {
+    color: white;
+    font-size: 200px;
+    font-family: 'Oleo Script';
+}
+
+
+
+.font-header-items {
+    color: #FFFFFF;
+    font-size: 18px;
+    font-family: 'Merriweather Sans';
+}
+
+.font-header-items:hover {
+    color: #F0DE07;
+}
+
+body {
+    background-color: #dedede;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.container {
+    flex-grow: 1;
+}
+
+.footer {
+    background-color: #ce1414;
+    color: #898686;
+    text-align: center;
+    padding: 30px;
+}
+
+.footer-home {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #ce1414;
+    color: #898686;
+    text-align: center;
+    padding: 30px;
+}
+
+.banner-background {
+    background: url('https://tierragamer.com/wp-content/uploads/2018/03/marvel_studios-1.jpg') no-repeat center center;
+    background-size: cover;
+}
+
+.banner-background-clientes {
+    background: url('https://1000logos.net/wp-content/uploads/2019/05/Avengers-Logo-2015.png') no-repeat center center;
+    background-size: cover;
+}
+
+
+.text-white-red-border {
+    color: white;
+    text-shadow: -1px 0 #ffffff, 0 1px #ce1414, 1px 0 #ce1414, 0 -1px #ffffff;
+    font-size: 50px; /* Ajusta este valor al tamaño que desees para los títulos */
+}
+
+.btn-agregar {
+    background-color: #28a745; /* Color de fondo verde */
+    border-color: #28a745; /* Color de borde verde */
+    color: white; /* Color de texto blanco */
+}
+.btn-editar {
+    background-color: #6d57f6;
+    border-color: #3622b6;
+}
+
+.btn-eliminar {
+    background-color: #ff0000;
+    border-color: #ce1414;
+}
+
+.blue-table {
+    background-color: #007bff;
+    color: white;
+}
+.banner-background-Productos {
+    background: url('https://1000logos.net/wp-content/uploads/2019/05/Avengers-Logo-2015.png') no-repeat center center;
+    background-size: cover;
+}
+.banner-background-Ventas {
+    background: url('https://1000logos.net/wp-content/uploads/2019/05/Avengers-Logo-2015.png') no-repeat center center;
+    background-size: cover;
+}
+

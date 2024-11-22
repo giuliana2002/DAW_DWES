@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        /* TENEMOS QUE DARLE UN TAMAÑO AL DIV QUE CONTIENE EL MAPA. SI NO, NO SE VERÁ  */
+        #divmapa {
+            width: 700px;
+            height: 700px;
+            border: 1px solid blue;
+        }
+    </style>
+
+    <title>API v3 de Google Maps. Ejemplo Eventos 3</title>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCb83QjuybuRmCt3yrv5fw7yeNdQMBN6dk&callback=console.debug&libraries=maps,marker&v=beta"></script>
+
+    <script>
+        let map;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('divmapa'), {
+                center: { lat: -34.397, lng: 150.644 },
+                zoom: 8
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        new google.maps.Marker({
+                            position: pos,
+                            map: map,
+                            title: "Tu ubicación"
+                        });
+
+                        map.setCenter(pos);
+                    },
+                    () => {
+                        handleLocationError(true, map.getCenter());
+                    }
+                );
+            }
+
+            //google.maps.event.addListener(map, 'click', function(e) {
+              //  map.setZoom(map.getZoom() + 3);
+                //map.setCenter(e.latLng);
+            //});
+            google.maps.event.addListener(map, 'rightclick', function(e) {
+                map.setZoom(map.getZoom() - 3);
+                map.setCenter(e.latLng);
+            });
+
+            google.maps.event.addListener(map, 'click', function(e) {
+                let infoWindow = new google.maps.InfoWindow({
+                    content: 'Coordenadas: ' + e.latLng.lat() + ', ' + e.latLng.lng()
+                });
+
+                infoWindow.setPosition(e.latLng);
+                infoWindow.open(map);
+            });
+        }
+
+        window.onload = initMap;
+    </script>
+</head>
+
+<body>
+<h3>API v3 de Google Maps. Ejemplo Eventos 3</h3>
+<h5>En esta versión, le añadimos un evento al MAPA.</h5>
+<p>El evento consiste en hacer poner una ventanica de info
+    con las coordenadas allí donde el usuario ha hecho click
+</p>
+
+<p>
+<div id="divmapa">
+    Aquí pondremos el mapa
+</div>
+</p>
+</body>
+</html>
