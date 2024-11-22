@@ -12,10 +12,11 @@
     </style>
 
     <title>API v3 de Google Maps. Ejemplo Eventos 3</title>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCb83QjuybuRmCt3yrv5fw7yeNdQMBN6dk&callback=console.debug&libraries=maps,marker&v=beta"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCb83QjuybuRmCt3yrv5fw7yeNdQMBN6dk&callback=console.debug&libraries=places&v=beta"></script>
 
     <script>
         let map;
+        let markers = [];
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('divmapa'), {
@@ -45,10 +46,6 @@
                 );
             }
 
-            //google.maps.event.addListener(map, 'click', function(e) {
-              //  map.setZoom(map.getZoom() + 3);
-                //map.setCenter(e.latLng);
-            //});
             google.maps.event.addListener(map, 'rightclick', function(e) {
                 map.setZoom(map.getZoom() - 3);
                 map.setCenter(e.latLng);
@@ -56,12 +53,69 @@
 
             google.maps.event.addListener(map, 'click', function(e) {
                 let infoWindow = new google.maps.InfoWindow({
-                    content: 'Coordenadas: ' + e.latLng.lat() + ', ' + e.latLng.lng()
+                    content: 'Coordenadas: ' + e.latLng.lat() + '<br>' + e.latLng.lng() + '<br>' +
+                        'Zoom: ' + map.getZoom()
                 });
 
                 infoWindow.setPosition(e.latLng);
                 infoWindow.open(map);
+
+                google.maps.event.addListener(map, 'zoom_changed', function() {
+                    infoWindow.setContent('Coordenadas: ' + e.latLng.lat() + '<br>' + e.latLng.lng() + '<br>' +
+                        'Zoom: ' + map.getZoom());
+                });
             });
+
+            // añadir búsqueda de direcciones
+            let input = document.getElementById('search');
+            let searchBox = new google.maps.places.SearchBox(input);
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+            searchBox.addListener('places_changed', function() {
+                let places = searchBox.getPlaces();
+                if (places.length == 0) {
+                    return;
+                }
+
+
+                markers.forEach(function(marker) {
+                    marker.setMap(null);
+                });
+                markers = [];
+
+                // Para cada lugar, obtener el nombre y la ubicación
+                let bounds = new google.maps.LatLngBounds();
+                places.forEach(function(place) {
+                    if (!place.geometry) {
+                        console.log("retorno de lugar contiene sin geometría");
+                        return;
+                    }
+                    let icon = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Crear un marcador para cada lugar
+                    markers.push(new google.maps.Marker({
+                        map: map,
+                        icon: icon,
+                        title: place.name,
+                        position: place.geometry.location
+                    }));
+
+                    if (place.geometry.viewport) {
+
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                map.fitBounds(bounds);
+            });
+
         }
 
         window.onload = initMap;
@@ -74,11 +128,12 @@
 <p>El evento consiste en hacer poner una ventanica de info
     con las coordenadas allí donde el usuario ha hecho click
 </p>
-
+<input id="search" type="text" placeholder="Buscar lugares">
 <p>
 <div id="divmapa">
     Aquí pondremos el mapa
 </div>
+
 </p>
 </body>
 </html>
