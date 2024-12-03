@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Altitud GPX</title>
+  <link href="c3-0.7.20/c3.css" rel="stylesheet">
+  <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+  <script src="c3-0.7.20/c3.min.js"></script>
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=YOUR_API_KEY"></script>
+</head>
+<body>
+<p>
+  <label for="id_fichero">Selecciona el fichero a leer:</label><br>
+  <input id="id_fichero" type="file" />
+</p>
+<div id="chart"></div>
+
+<script>
+  function Leer_Fichero(evento) {
+    var fichero = evento.target.files[0];
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      var xml = new DOMParser().parseFromString(reader.result, "text/xml");
+      tratarXML(xml);
+    };
+
+    reader.readAsText(fichero);
+  }
+
+  function tratarXML(xml) {
+    var puntos = xml.getElementsByTagName("trkpt");
+    var altitudes = ['Altitud'];
+    var velocidades = ['Velocidad'];
+    var tiempos = [];
+
+    for (var i = 0; i < puntos.length; i++) {
+      var altitud = puntos[i].getElementsByTagName("ele")[0].textContent;
+      altitudes.push(parseFloat(altitud));
+      var tiempo = new Date(puntos[i].getElementsByTagName("time")[0].textContent);
+      tiempos.push(tiempo);
+    }
+
+    for (var i = 1; i < puntos.length; i++) {
+      var lat1 = parseFloat(puntos[i-1].getAttribute("lat"));
+      var lon1 = parseFloat(puntos[i-1].getAttribute("lon"));
+      var lat2 = parseFloat(puntos[i].getAttribute("lat"));
+      var lon2 = parseFloat(puntos[i].getAttribute("lon"));
+      var distancia = calcularDistancia(lat1, lon1, lat2, lon2);
+      var tiempoTranscurrido = (tiempos[i] - tiempos[i-1]) / 1000; // en segundos
+      var velocidad = (distancia / tiempoTranscurrido) * 3.6; // convertir a km/h
+      velocidades.push(velocidad);
+    }
+
+    generarGrafico(altitudes, velocidades);
+  }
+
+  function calcularDistancia(lat1, lon1, lat2, lon2) {
+    var R = 6371e3; // radio de la Tierra en metros
+    var φ1 = lat1 * Math.PI/180;
+    var φ2 = lat2 * Math.PI/180;
+    var Δφ = (lat2 - lat1) * Math.PI/180;
+    var Δλ = (lon2 - lon1) * Math.PI/180;
+
+    var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    var distancia = R * c; // en metros
+    return distancia;
+  }
+
+  function generarGrafico(altitudes, velocidades) {
+    var chart = c3.generate({
+      bindto: '#chart',
+      data: {
+        columns: [
+          altitudes,
+          velocidades
+        ],
+        types: {
+          Altitud: 'line',
+          Velocidad: 'line'
+        }
+      }
+    });
+  }
+
+  window.onload = function() {
+    document.getElementById("id_fichero").addEventListener('change', Leer_Fichero, false);
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+</head>
+<script>
+  window.onload = function() {
+    var chart = c3.generate({
+      data: {
+        columns: [
+          ['data1', 300, 100, 250, 150, 300, 150, 500],
+          ['data2', 100, 200, 150, 50, 100, 250],
+          ['data3', 200, 300, 200, 100, 200, 100],
+          ['data4', 234,344,234,234,56,231,123]
+        ],
+        types: {
+          data1: 'area',
+          data2: 'area-spline',
+          data3: 'area-step',
+          data4: 'bar'
+        }
+      }
+    });
+  }
+
+</script>
+<body>
+<div id="chart"></div>
+
+
+
+</body>
+</html>

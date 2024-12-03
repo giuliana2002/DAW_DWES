@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 1 GPX</title>
+    <style type="text/css">
+        #mapa {
+            width: auto;
+            height: 700px;
+            border: 1px solid blue;
+        }
+    </style>
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+    <script type="text/javascript"
+            src="http://maps.google.com/maps/api/js?libraries=geometry&key=AIzaSyA6rLid89W1HGF2lCnQbfx62tr-57ugzdU">
+    </script>
+    <script type="text/javascript">
+        var mapa; // Variable global para almacenar el mapa
+        var miXml; // Variable global para almacenar el XML
+
+        // Función para leer el archivo seleccionado
+        function Leer_Fichero(evento) {
+            var e = evento || window.event; // Captura el evento
+            var fichero = e.target.files[0]; // Obtiene el archivo seleccionado
+
+            // Función para convertir el texto a formato XML
+            function Convertir_a_XML(texto) {
+                var xml = null;
+                if (window.ActiveXObject) {
+                    // Conversión para navegadores antiguos (IE)
+                    xml = new ActiveXObject("Microsoft.XMLDOM");
+                    xml.loadXML(texto);
+                } else {
+                    // Conversión estándar moderna
+                    xml = new DOMParser().parseFromString(texto, "text/xml");
+                }
+                return xml;
+            }
+
+            var reader = new FileReader(); // Objeto para leer archivos
+
+            // Evento que se ejecuta cuando el archivo ha sido leído
+            reader.onload = function (e) {
+                miXml = Convertir_a_XML(reader.result); // Convierte el contenido del archivo a XML
+                console.log("miXml", miXml);
+                CargarMapa(miXml);
+                tratarXML(miXml);
+            };
+
+            reader.readAsText(fichero);
+        }
+
+        function CargarMapa(xml) {
+            var puntos = xml.getElementsByTagName("trkpt"); // Obtiene todos los puntos GPS (<trkpt>)
+            var coordenadas = []; // Array para almacenar los puntos GPS
+
+            // Configuración inicial del mapa centrado en el primer punto
+            var primeraLat = puntos[0].getAttributeNode("lat").nodeValue;
+            var primeraLon = puntos[0].getAttributeNode("lon").nodeValue;
+
+            var opciones = {
+                zoom: 16,
+                center: new google.maps.LatLng(primeraLat, primeraLon) // Centrar el mapa
+            };
+
+            var divMapa = document.getElementById("mapa"); // Contenedor del mapa
+            mapa = new google.maps.Map(divMapa, opciones); // Crea el mapa
+
+            // Agregar marcador de salida
+            var salida = new google.maps.Marker({
+                position: new google.maps.LatLng(primeraLat, primeraLon),
+                map: mapa,
+                icon: {
+                    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, // Forma del ícono
+                    strokeColor: "green", // Color del borde
+                    scale: 5 // Tamaño del ícono
+                },
+                title: "Punto de Inicio"
+            });
+
+            // Procesar los puntos y construir la ruta
+            for (var i = 0; i < puntos.length; i++) {
+                var latitud = puntos[i].getAttributeNode("lat").nodeValue;
+                var longitud = puntos[i].getAttributeNode("lon").nodeValue;
+                coordenadas.push(new google.maps.LatLng(latitud, longitud));
+            }
+
+            // Agregar marcador de destino (último punto)
+            var ultimaLat = puntos[puntos.length - 1].getAttributeNode("lat").nodeValue;
+            var ultimaLon = puntos[puntos.length - 1].getAttributeNode("lon").nodeValue;
+
+            var final = new google.maps.Marker({
+                position: new google.maps.LatLng(ultimaLat, ultimaLon),
+                map: mapa,
+                icon: {
+                    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, // Forma del ícono
+                    strokeColor: "red", // Color del borde
+                    scale: 5 // Tamaño del ícono
+                },
+                title: "Punto Final"
+            });
+
+            // Dibujar la línea poligonal (Polyline)
+            var polyline = new google.maps.Polyline({
+                path: coordenadas, // Ruta
+                geodesic: true,
+                strokeColor: "#A020F0",
+                strokeOpacity: 1.0,
+                strokeWeight: 6
+            });
+
+            polyline.setMap(mapa); // Dibujar la línea en el mapa
+            // console.log("tiempo", tiempo);
+
+            var distancia = google.maps.geometry.spherical.computeLength(coordenadas);
+            console.log("Distancia en metros:", distancia);
+            var distanciaKilometros = distancia / 1000
+            var datosRuta = document.getElementById("datos");
+            datosRuta.innerHTML = "";
+            datosRuta.innerHTML += "Distancia: " + distanciaKilometros.toFixed(2) + " kilometros";
+
+            //fechas
+            let primerTiempo = new Date(puntos[0].getElementsByTagName("time")[0].innerHTML);
+            let ultimoTiempo = new Date(puntos[puntos.length - 1].getElementsByTagName("time")[0].innerHTML);
+
+            var diff = new Date(ultimoTiempo - primerTiempo);
+            console.log(diff.getUTCHours());
+
+            var duracionTotal = diff.getUTCHours() + ":" + diff.getUTCMinutes() + ":" + diff.getUTCSeconds();
+
+            datosRuta.innerHTML += " Duracion: " + duracionTotal
+
+            //Velocidad
+            var diffSeg = diff / 1000;
+
+            var velocidad = (distanciaKilometros / (diffSeg / 3600));
+            console.log("velocidad", velocidad);
+
+            datosRuta.innerHTML += " Velocidad: " + velocidad.toFixed(2) + " km/h";
+        }
+
+        // Función para extraer altitudes y generar el gráfico
+        function tratarXML(xml) {
+            var puntos = xml.getElementsByTagName("trkpt");
+            var altitudes = ['Altitud'];
+
+            for (var i = 0; i < puntos.length; i++) {
+                var altitud = puntos[i].getElementsByTagName("ele")[0].textContent;
+                altitudes.push(parseFloat(altitud));
+            }
+
+            generarGrafico(altitudes);
+
+        }
+
+        function generarGrafico(altitudes) {
+            var chart = c3.generate({
+                bindto: '#chart',
+                data: {
+                    columns: [
+                        altitudes
+                    ],
+                    types: {
+                        Altitud: 'line'
+                    }
+                }
+            });
+        }
+
+        function generarjson() {
+            var puntos = miXml.getElementsByTagName("trkpt");
+            var data = [];
+
+            for (var i = 0; i < puntos.length; i++) {
+
+                var lat = puntos[i].getAttribute("lat");
+                var lon = puntos[i].getAttribute("lon");
+                var ele = puntos[i].getElementsByTagName("ele")[0].textContent;
+                var time = puntos[i].getElementsByTagName("time")[0].textContent;
+                data.push({lat, lon: lon, ele: ele, time: time });
+            }
+
+            var json = JSON.stringify(data);
+            var blob = new Blob([json], { type: "application/json" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = "ruta.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = function () {
+            document.getElementById("id_fichero").addEventListener('change', Leer_Fichero, false);
+            document.getElementById("id_fichero_descargar").addEventListener('click', generarjson, false);
+        };
+    </script>
+</head>
+
+<body>
+<p>
+    <label for="id_fichero">Selecciona el fichero a leer:</label><br>
+    <input id="id_fichero" type="file" />
+    <input id="id_fichero_descargar" type="button" name="descargar" value="Descargar"></p>
+<br>
+
+<div id="datos"></div>
+<div id="mapa"></div>
+<div id="chart"></div>
+</body>
+
+</html>
