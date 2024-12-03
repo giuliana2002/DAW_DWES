@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        /* TENEMOS QUE DARLE UN TAMAÑO AL DIV QUE CONTIENE EL MAPA. SI NO, NO SE VERÁ */
+        #divmapa {
+            width: 700px;
+            height: 700px;
+            border: 1px solid blue;
+        }
+    </style>
+
+    <title>Mapa con Geolocalización</title>
+
+    <script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA6rLid89W1HGF2lCnQbfx62tr-57ugzdU">
+        </script>
+
+    <script type="text/javascript">
+        var mapa; // Variable global para el mapa
+
+        function CargarMapa() {
+            var opciones = {
+                zoom: 17,
+            };
+
+            var divMapa = document.getElementById("divmapa");
+            mapa = new google.maps.Map(divMapa, opciones);
+
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    var latitud = pos.coords.latitude;
+                    var longitud = pos.coords.longitude;
+
+                    var centro = { lat: latitud, lng: longitud };
+                    mapa.setCenter(centro);
+
+
+                    var marcador = new google.maps.Marker({
+                        position: centro,
+                        map: mapa,
+                        title: "Tu ubicación actual",
+                    });
+                }, function (error) {
+                    alert("Error al obtener la geolocalización: " + error.message);
+                });
+            } else {
+                alert("La geolocalización no está soportada por este navegador.");
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <p>
+        <button id="btCargarMapa" onclick="CargarMapa()">Cargar Mapa</button>
+    </p>
+    <p>
+    <div id="divmapa">
+        Aquí pondremos el mapa
+    </div>
+    </p>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">
+        #mapa {
+            width: auto;
+            height: 700px;
+            border: 1px solid blue;
+        }
+
+        #datosRuta {
+            width: 300px;
+            height: 100px;
+            border: 1px solid black;
+            overflow-y: auto;
+            padding: 10px;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        #contenedor {
+            display: flex;
+        }
+
+        #formulario {
+            margin-bottom: 10px;
+        }
+    </style>
+    <title>Ejemplo Rutas</title>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyA6rLid89W1HGF2lCnQbfx62tr-57ugzdU">
+    </script>
+    <script type="text/javascript">
+        var directionsDisplay = new google.maps.DirectionsRenderer();
+        var directionsService = new google.maps.DirectionsService();
+        var mapa;
+
+        window.onload = function () {
+            document.getElementById("btCalcular").addEventListener('click', calcularRuta);
+            cargarMapa();
+        };
+
+        function cargarMapa() {
+            var micasa = new google.maps.LatLng(37.407639, -5.927344);
+            var opcionesmapa = {
+                zoom: 9,
+                center: micasa
+            };
+            mapa = new google.maps.Map(document.getElementById("mapa"), opcionesmapa);
+            directionsDisplay.setMap(mapa);
+        }
+
+        function calcularRuta() {
+            var origen = document.getElementById("origen").value;
+            var destino = document.getElementById("destino").value;
+            var request = {
+                origin: origen,
+                destination: destino,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, function (result, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    console.log("result", result)
+                    directionsDisplay.setDirections(result);
+                    let divRuta = document.querySelector("#datosRuta");
+                    divRuta.innerHTML = "";
+
+                    let listaRuta = result.routes[0].legs[0].steps;
+
+                    listaRuta.forEach((paso, i) => {
+                        divRuta.innerHTML += (i + 1) + ". " + paso.instructions + "<br>";
+                    });
+
+                } else {
+                    alert("No se pudo calcular la ruta: " + status);
+                }
+            });
+        }
+
+
+    </script>
+</head>
+
+<body>
+    <h3>Ejemplo para crear una ruta con Google Maps</h3>
+    <div id="contenedor">
+        <div id="formulario">
+            <p>
+                <label>Origen: </label>
+                <input type="text" id="origen" value="Sevilla" /> <br>
+                <label>Destino: </label>
+                <input type="text" id="destino" value="Murcia" /> <br>
+                <button id="btCalcular">Calcular Ruta</button>
+            </p>
+        </div>
+        <div id="datosRuta">
+
+        </div>
+        <br><br>
+    </div>
+    <div id="mapa"></div>
+</body>
+
+</html>

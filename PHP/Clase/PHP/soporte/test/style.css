@@ -1,0 +1,29 @@
+body {
+    font-family: "Calibri Light", sans-serif;
+    background-color: #d0cdcd;
+    display: flex;
+    font-size: 1.2em;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+}
+
+strong {
+    color: rgba(108, 5, 234, 0.92);
+}
+
+p {
+    margin: 10px 0;
+}
