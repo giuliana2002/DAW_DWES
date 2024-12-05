@@ -2,63 +2,77 @@
 
 namespace Dwes\ProyectoVideoclub;
 
+use Dwes\ProyectoVideoclub\Util\SoporteYaAlquiladoException;
+use Dwes\ProyectoVideoclub\Util\CupoSuperadoException;
+use Dwes\ProyectoVideoclub\Util\SoporteNoEncontradoException;
+use Dwes\ProyectoVideoclub\Util\ClienteNoEncontradoException;
+
 class Videoclub {
     private $nombre;
     private $productos = [];
     private $socios = [];
+    private $numProductosAlquilados = 0;
+    private $numTotalAlquileres = 0;
 
     public function __construct($nombre) {
         $this->nombre = $nombre;
     }
 
-    public function incluirJuego($titulo, $precio, $consola, $minJugadores, $maxJugadores) {
-        $juego = new Juego($titulo, count($this->productos), $precio, $consola, $minJugadores, $maxJugadores);
-        $this->incluirProducto($juego);
+    public function getNumProductosAlquilados() {
+        return $this->numProductosAlquilados;
     }
 
-    public function incluirDvd($titulo, $precio, $idiomas, $formatoPantalla) {
-        $dvd = new Dvd($titulo, count($this->productos), $precio, $idiomas, $formatoPantalla);
-        $this->incluirProducto($dvd);
+    public function getNumTotalAlquileres() {
+        return $this->numTotalAlquileres;
+    }
+
+    public function incluirJuego($titulo, $precio, $consola, $minJ, $maxJ) {
+        $this->productos[] = new Juego($titulo, $numero, $precio, $consola, $minJ, $maxJ);
+    }
+
+    public function incluirDvd($titulo, $precio, $idiomas, $pantalla) {
+        $this->productos[] = new Dvd($titulo, $numero, $precio, $idiomas, $pantalla);
     }
 
     public function incluirCintaVideo($titulo, $precio, $duracion) {
-        $cinta = new CintaVideo($titulo, count($this->productos), $precio, $duracion);
-        $this->incluirProducto($cinta);
+        $this->productos[] = new CintaVideo($titulo, $numero, $precio, $duracion);
     }
 
-    private function incluirProducto(Soporte $producto) {
-        $this->productos[] = $producto;
-        echo "Incluido soporte " . (count($this->productos) - 1) . "<br>";
+    public function incluirSocio($nombre, $maxAlquilerConcurrente = 3) {
+        $this->socios[] = new Cliente($nombre, count($this->socios) + 1, $maxAlquilerConcurrente);
     }
 
-    public function listarProductos() {
-        echo "Listado de los " . count($this->productos) . " productos disponibles:<br>";
-        foreach ($this->productos as $producto) {
-            echo ($producto->numero + 1) . ".- ";
-            $producto->muestraResumen();
-            echo "<br>";
+    public function alquilarSocioProductos($numSocio, $numerosProductos) {
+        $socio = $this->socios[$numSocio - 1] ?? null;
+        if (!$socio) {
+            throw new ClienteNoEncontradoException("Cliente no encontrado.");
+        }
+
+        foreach ($numerosProductos as $numProducto) {
+            $producto = $this->productos[$numProducto - 1] ?? null;
+            if (!$producto || $producto->alquilado) {
+                throw new SoporteYaAlquiladoException("Uno o más productos no están disponibles.");
+            }
+        }
+
+        foreach ($numerosProductos as $numProducto) {
+            $producto = $this->productos[$numProducto - 1];
+            $socio->alquilar($producto);
+            $producto->alquilado = true;
+            $this->numProductosAlquilados++;
+            $this->numTotalAlquileres++;
         }
     }
 
-    public function incluirSocio($nombre, $maxAlquileres = 3) {
-        $socio = new Cliente($nombre, count($this->socios), $maxAlquileres);
-        $this->socios[] = $socio;
-        echo "Incluido socio " . (count($this->socios) - 1) . "<br>";
-    }
-
-    public function alquilaSocioProducto($numSocio, $numProducto) {
-        if (isset($this->socios[$numSocio]) && isset($this->productos[$numProducto])) {
-            $this->socios[$numSocio]->alquilar($this->productos[$numProducto]);
-        } else {
-            echo "Socio o producto no encontrado.<br>";
+    public function listarProductos() {
+        foreach ($this->productos as $producto) {
+            $producto->muestraResumen();
         }
     }
 
     public function listarSocios() {
-        echo "Listado de " . count($this->socios) . " socios del videoclub:<br>";
         foreach ($this->socios as $socio) {
-            echo ($socio->getNumero() + 1) . ".- Cliente " . $socio->getNumero() . ": " . $socio->nombre . "<br>";
-            echo "Alquileres actuales: " . $socio->getNumSoportesAlquilados() . "<br>";
+            $socio->muestraResumen();
         }
     }
 }
