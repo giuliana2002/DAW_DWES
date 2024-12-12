@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Ejercicio Datos Ocupación Empleo</title>
+    <style type="text/css">
+        h2 {
+            text-align: center;
+            color: maroon;
+        }
+    </style>
+
+    <!-- Load c3.css -->
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+
+    <!-- Load d3.js and c3.js -->
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js" charset="utf-8"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+
+    <script type="text/javascript">
+        let datos;
+        window.onload = () => {
+            document.querySelector("#fichero").addEventListener("change", leer_Fichero, false);
+            document.querySelector("#selDatos").addEventListener("change", mostrarGrafico, false);
+            document.querySelectorAll("input[name='grafico']").forEach(radio => {
+                radio.addEventListener("change", mostrarGrafico);
+            });
+        }
+
+        function leer_Fichero(e) {
+            let fichero = e.target.files[0];
+            if (fichero) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        let miJson = JSON.parse(reader.result);
+                        console.log("miJson:", miJson);
+                        tratarJson(miJson);
+                    }
+                    catch (error) {
+                        console.error("error al parsear el json", error);
+                    }
+                }
+                reader.readAsText(fichero);
+            } else {
+                console.error("No se seleccionó ningún archivo.");
+            }
+        }
+
+        function tratarJson(json) {
+            datos = Object.groupBy(json, dato => dato.MetaData[1].Nombre);
+            console.log("datos:", datos);
+
+            let select = document.querySelector("#selDatos");
+            for (let sexo in datos) {
+                console.log("sexo", sexo);
+                let option = document.createElement("option");
+                option.value = sexo;
+                option.textContent = sexo;
+                select.appendChild(option);
+            }
+        }
+
+        const mostrarGrafico = (e) => {
+            let sel = e.target.selectedOptions;
+            let indi = sel[0].value;
+            console.log("sel[0].value", indi);
+
+            let opciones = Object.groupBy(datos[sel[0].value], s => s.MetaData[2].Nombre);
+            console.log("opciones:", opciones);
+            let dat = [];
+            for (let d in opciones) {
+                dat.push([d, opciones[d][0].Data[0].Valor]);
+            }
+            console.log("dat: ", dat);
+
+
+            let tipoGrafico = document.querySelector("input[name='grafico']:checked").value;
+            pintarGrafico("#grafico", tipoGrafico, dat);
+        }
+
+        function pintarGrafico(div, tipo, dat) {
+            c3.generate({
+                bindto: div,
+                data: {
+                    columns: dat,
+                    type: tipo
+                },
+            })
+        }
+
+    </script>
+
+</head>
+
+<body>
+<h2>Ocupados por sexo y grupo de edad</h2>
+
+<div>
+    <label for="fichero">Fichero: </label>
+    <input type="file" id="fichero" accept=".json" />
+</div>
+
+<br>
+
+<select id="selDatos" multiple size="7">
+</select>
+
+<br><br>
+
+
+<div>
+    <label>
+        <input type="radio" name="grafico" value="donut" checked> Donut
+    </label>
+    <label>
+        <input type="radio" name="grafico" value="pie"> Queso
+    </label>
+    <label>
+        <input type="radio" name="grafico" value="bar"> Barras
+    </label>
+</div>
+
+<br><br>
+
+<p>
+<div id="grafico"></div>
+</p>
+
+</body>
+
+</html>
