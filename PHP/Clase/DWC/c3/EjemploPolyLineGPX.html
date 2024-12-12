@@ -173,22 +173,22 @@
 
         function generarjson() {
             var puntos = miXml.getElementsByTagName("trkpt");
+            var descripcion = miXml.getElementsByTagName("desc")[0].textContent;
             var data = [];
 
             for (var i = 0; i < puntos.length; i++) {
-
                 var lat = puntos[i].getAttribute("lat");
                 var lon = puntos[i].getAttribute("lon");
                 var ele = puntos[i].getElementsByTagName("ele")[0].textContent;
                 var time = puntos[i].getElementsByTagName("time")[0].textContent;
-                data.push({lat, lon: lon, ele: ele, time: time });
+                data.push({descripcion: descripcion, lat: lat, lon: lon, ele: ele, time: time });
             }
 
-            var json = JSON.stringify(data);
-            var blob = new Blob([json], { type: "application/json" });
+            var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
+
             a.download = "ruta.json";
             a.click();
             URL.revokeObjectURL(url);

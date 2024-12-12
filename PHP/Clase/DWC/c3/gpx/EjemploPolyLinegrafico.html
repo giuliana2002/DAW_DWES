@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Ejemplo de acceso a fichero XML (local)</title>
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+    <script type="text/javascript">
+        function Leer_Fichero(evento) {
+            var e = evento || window.event;
+            var fichero = e.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                tratarXML(new DOMParser().parseFromString(reader.result, "text/xml"));
+            }
+            reader.readAsText(fichero);
+        }
+
+        function tratarXML(xml) {
+            var datos = ["activos", "ocupados", "parados", "tasa_actividad", "tasa_paro"];
+            var datosguardar = document.getElementById("datosguardar");
+            datosguardar.innerHTML = "";
+
+            datos.forEach(function(dato) {
+                var option = document.createElement("option");
+                option.value = dato;
+                option.text = dato;
+                datosguardar.add(option);
+            });
+
+            generarGrafico(xml, datos[0]);
+        }
+
+        function generarGrafico(xml, datoSeleccionado) {
+            var trimestres = ["trimestre"];
+            var valores = [datoSeleccionado];
+
+            var rows = xml.getElementsByTagName("row");
+            for (var i = 0; i < rows.length; i++) {
+                trimestres.push(rows[i].getElementsByTagName("trimestre")[0].textContent);
+                valores.push(parseFloat(rows[i].getElementsByTagName(datoSeleccionado)[0].textContent));
+            }
+
+            var chart = c3.generate({
+                bindto: '#chart',
+                data: {
+                    x: 'trimestre',
+                    columns: [
+                        trimestres,
+                        valores
+                    ]
+                },
+                axis: {
+                    x: {
+                        type: 'category'
+                    }
+                }
+            });
+        }
+
+        window.onload = function () {
+            document.getElementById("id_fichero").addEventListener('change', Leer_Fichero, false);
+            document.getElementById("datosguardar").addEventListener('change', function() {
+                var xml = new DOMParser().parseFromString(document.getElementById("id_fichero").files[0].result, "text/xml");
+                generarGrafico(xml, this.value);
+            }, false);
+        };
+    </script>
+</head>
+
+<body>
+<p>
+    <label for="id_fichero">Selecciona el fichero a leer:</label>
+    <input id="id_fichero" type="file" />
+</p>
+<p>Selecciona el dato que quieras mostrar en el gráfico <select id="datosguardar"></select></p>
+<div id="chart"></div>
+</body>
+</html>
