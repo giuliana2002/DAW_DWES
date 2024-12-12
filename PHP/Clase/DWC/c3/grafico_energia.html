@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico Encuesta Población Activa</title>
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+
+    <style>
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input,
+        select {
+            margin-bottom: 20px;
+            display: block;
+            margin-right: auto;
+        }
+
+        select {
+            height: 90px;
+            width: 110px;
+        }
+
+        #chart {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Gráfico Encuesta Población Activa</h1>
+    <input type="file" id="fileInput" accept=".xml">
+    <select id="dataSelect" multiple>
+        <option value="activos">Activos</option>
+        <option value="ocupados">Ocupados</option>
+        <option value="parados">Parados</option>
+        <option value="tasaActividad">Tasa Actividad</option>
+        <option value="tasaParo">Tasa Paro</option>
+    </select>
+    <div id="chart"></div>
+
+    <button id="downloadButton">Descargar Datos en JSON</button>
+
+    <script>
+        let labels = [];
+        let datos = {
+            activos: [],
+            ocupados: [],
+            parados: [],
+            tasaActividad: [],
+            tasaParo: []
+        };
+
+        document.getElementById('fileInput').addEventListener('change', Leer_Fichero);
+        document.getElementById('downloadButton').addEventListener('click', descargarJSON);
+
+        function Leer_Fichero(evento) {
+            var archivo = evento.target.files[0];
+
+            var reader = new FileReader();
+
+            reader.onload = function () {
+                var xml = new DOMParser().parseFromString(reader.result, "application/xml");
+                procesarXML(xml);
+                generarGrafico();
+            };
+
+            reader.readAsText(archivo);
+        }
+
+        function procesarXML(xml) {
+            labels = [];
+            datos = {
+                activos: [],
+                ocupados: [],
+                parados: [],
+                tasaActividad: [],
+                tasaParo: []
+            };
+
+            var filas = xml.getElementsByTagName('row');
+
+            for (let i = 0; i < filas.length; i++) {
+                var trimestre = filas[i].getElementsByTagName('trimestre')[0].textContent;
+                labels.push(trimestre);
+
+                datos.activos.push(parseFloat(filas[i].getElementsByTagName('activos')[0].textContent));
+                datos.ocupados.push(parseFloat(filas[i].getElementsByTagName('ocupados')[0].textContent));
+                datos.parados.push(parseFloat(filas[i].getElementsByTagName('parados')[0].textContent));
+                datos.tasaActividad.push(parseFloat(filas[i].getElementsByTagName('tasa_actividad')[0].textContent));
+                datos.tasaParo.push(parseFloat(filas[i].getElementsByTagName('tasa_paro')[0].textContent));
+            }
+
+            // Invierte el orden de labels y los datos asociados
+            labels.reverse();
+            for (let key in datos) {
+                datos[key].reverse();
+            }
+        }
+
+        function generarGrafico() {
+            var selectedOptions = Array.from(document.getElementById('dataSelect').selectedOptions);
+            var chartData = selectedOptions.map(option => {
+                return [option.textContent, ...datos[option.value]];
+            });
+
+            c3.generate({
+                bindto: "#chart",
+                data: {
+                    columns: chartData,
+                    type: "line",
+                },
+                axis: {
+                    x: {
+                        type: 'category',
+                        categories: labels,
+                        label: 'Trimestres'
+                    },
+                    y: {
+                        label: 'Valores'
+                    }
+                },
+                legend: {
+                    position: 'bottom',
+                    inset: {
+                        step: 1
+                    }
+                }
+            });
+        }
+
+        function descargarJSON() {
+            let titulo = "Datos Encuesta Población Activa";
+
+            // Crear una estructura que exporte los datos punto por punto
+            let puntos = labels.map((trimestre, index) => {
+                return {
+                    trimestre: trimestre,
+                    datos: {
+                        activos: datos.activos[index],
+                        ocupados: datos.ocupados[index],
+                        parados: datos.parados[index],
+                        tasaActividad: datos.tasaActividad[index],
+                        tasaParo: datos.tasaParo[index],
+                    }
+                };
+            });
+
+            let datosExportados = {
+                title: titulo,
+                puntos: puntos
+            };
+
+            let data = JSON.stringify(datosExportados, null, 2);
+            let blob = new Blob([data], { type: "application/json" });
+            let url = URL.createObjectURL(blob);
+            let enlace = document.createElement("a");
+            enlace.href = url;
+            enlace.download = "datos_encuesta.json";
+            enlace.click();
+            URL.revokeObjectURL(url);
+        }
+
+
+        document.getElementById('dataSelect').addEventListener('change', function () {
+            generarGrafico();
+        });
+    </script>
+</body>
+
+</html>
