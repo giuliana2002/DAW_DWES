@@ -1,6 +1,0 @@
-Clase: zumba
-Día: martes
-Hora: 18:00
-Plazas Totales: 20
-Plazas Disponibles: 19
-Plazas Reservadas: 1

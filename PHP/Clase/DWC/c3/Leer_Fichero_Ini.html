@@ -8,7 +8,7 @@
 
 
     function Leer_Fichero(e) {
-			console.log("e.target.files: ", e.target.files);
+        console.log("e.target.files: ", e.target.files);
     	var fichero = e.target.files[0];
 
     	var lector = new FileReader();
@@ -16,12 +16,12 @@
     		tratarFichero(lector.result);
     	}
     	lector.readAsText(fichero);	
-    }  // Leer_Fichero 
+    }
 
 		const tratarFichero = (contenido)=> {
 			console.log("datos: ", contenido);
 
-		} //  tratarFichero
+		}
 
     
 
