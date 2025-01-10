@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicio 2 C3.Js</title>
+
+    <!-- Load c3.css -->
+    <link href="c3-0.7.20/c3.css" rel="stylesheet">
+
+    <!-- Load d3.js and c3.js -->
+    <script src="c3-0.7.20/docs/js/d3-5.8.2.min.js" charset="utf-8"></script>
+    <script src="c3-0.7.20/c3.min.js"></script>
+
+    <script>
+
+        //let dato = ['data1', 30, 200, 100, 400, 150, 250];
+        let datosXml;
+        let objDatos = {};
+
+        window.onload = () => {
+
+            document.querySelector("#id_fichero").addEventListener("change", leer_Fichero, false);
+            document.querySelector("#listDatos").addEventListener('change', generarGraf, false);
+            document.querySelector("#btDescJson").addEventListener('click', () => { descargarDatos(generarJsonXML(datosXml)) }, false);
+
+        }
+
+        function generarJsonXML(xml) {
+
+            const rows = xml.querySelectorAll("row");
+            const resultado = [];
+
+            rows.forEach(row => {
+                const obj = {};
+
+                // Iterar sobre los hijos de cada fila y construir el objeto
+                Array.from(row.children).forEach(child => {
+
+                    if (child.tagName == "trimestre") {
+
+                        obj[child.tagName] = child.textContent;
+
+                    } else {
+
+                        obj[child.tagName] = parseFloat(child.textContent);
+
+                    }
+
+                });
+
+                resultado.push(obj);
+            });
+
+            let json = {
+                root: resultado
+            }
+
+            console.log('json :>> ', json);
+
+            return json;
+
+        }
+
+        function descargarDatos(datos) {
+
+            let link = document.createElement('a');
+            const nombreFichero = prompt("Introduce el nombre del fichero (no pongas extensión)", "Datos_EPA");
+
+            link.download = nombreFichero + '.json';
+
+            let blob = new Blob([JSON.stringify(datos)], { type: "application/json" });
+
+            /* Esto es la comprobación */
+            /*blob.text().then(d => {
+              console.log('d :>> ', d);
+              console.log('obj: :>> ', JSON.parse(d));
+            });*/
+
+            link.href = URL.createObjectURL(blob);
+            link.click();;
+            URL.revokeObjectURL(link.href);
+
+        }
+
+        function generarGraf(e) {
+
+            // Obtener todas las opciones seleccionadas
+            const selectedOptions = Array.from(document.querySelector("#listDatos").selectedOptions);
+            const columnas = [];
+
+            //console.log('selectedOptions :>> ', selectedOptions[0]);
+
+            selectedOptions.forEach(option => {
+                const key = option.value; // Obtener el valor de la opción seleccionada
+
+                if (objDatos[key]) {
+                    // Crear un array que contiene la clave y todos los valores del array correspondiente
+                    const dataArray = [key]; // El primer elemento es el nombre de la serie
+                    objDatos[key].forEach(value => dataArray.push(value)); // Agregar los valores del array al final
+                    columnas.push(dataArray); // Agregar la serie completa a columnas
+
+                }
+
+            });
+
+            function pintarGrafico(div, columnas) {
+                c3.generate({
+                    bindto: div,
+                    data: {
+                        columns: columnas,
+                        types: {
+                            activos: 'spline',  // Línea suave
+                            ocupados: 'spline',
+                            parados: 'spline',
+                            tasa_actividad: 'spline',
+                            tasa_paro: 'spline'
+                        }
+                    },
+                    axis: {
+                        x: {
+                            type: 'category',
+                            categories: objDatos.trimestre, // Asignar trimestres al eje X
+                            tick: {
+                                rotate: 30
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Miles de personas',
+                                position: 'outer-middle'
+                            }
+                        }
+                    },
+                    title: {
+                        text: 'Encuesta EPA'
+                    }
+                    /*point: {
+                      show: true // Mostrar puntos en las líneas
+                    }*/
+                });
+            }
+
+            function leer_Fichero(e) {
+                let fichero = e.target.files[0];
+
+                function Convertir_a_XML(texto) {
+
+                    let xml = null;
+                    if (window.ActiveXObject) {
+
+                        xml = new ActiveXObject("Microsoft.XMLDOM");
+                        xml.loadXML(texto);
+
+                    } else {
+
+                        xml = new DOMParser().parseFromString(texto, "text/xml");
+
+                    }
+
+                    return xml;
+
+                }
+
+                let reader = new FileReader();
+                reader.onload = function (e) {
+
+                    let miXml = Convertir_a_XML(reader.result);
+                    console.log('miXml :>> ', miXml);
+
+                    llenarSelect(miXml);
+                    datosXml = miXml;
+
+                }
+
+                reader.readAsText(fichero);
+
+            }
+
+            function llenarSelect(xml) {
+
+                const select = document.querySelector("#listDatos");
+                const rows = Array.from(xml.querySelectorAll("row")).reverse();
+                const headers = Array.from(rows[0].children).map(hijo => hijo.tagName);
+
+                // Configurar tamaño del select y agregar opciones dinámicamente
+                select.size = headers.length;
+                headers.forEach(header => {
+                    const option = addElement("option", select);
+                    option.value = header;
+                    option.innerHTML = header;
+                });
+
+                // Inicializar objDatos con claves dinámicas
+                headers.forEach(header => {
+                    objDatos[header] = []; // Crear un array vacío para cada header
+                });
+
+                // Llenar objDatos con los datos del XML
+                rows.forEach(row => {
+                    headers.forEach(header => {
+                        const value = row.querySelector(header).innerHTML; // Obtener valor o null si no existe
+                        objDatos[header].push(value);
+                    });
+                });
+
+                console.log("objDatos :>> ", objDatos);
+
+            }
+
+            function addElement(nameElement, dadElement) {
+
+                // Creación del nodo de tipo Element
+                let element = document.createElement(nameElement);
+
+                // Agrega el elemento creado como hijo de dadElement
+                dadElement.appendChild(element);
+
+                return element;
+
+            }
+        }
+    </script>
+
+</head>
+
+<body>
+<h1>Gráfico XML EPA</h1>
+
+<div>
+    <label for="id_fichero">Selecciona el fichero a XML:</label><br>
+    <input id="id_fichero" type="file" />
+    <input type="button" value="Descargar Json" id="btDescJson">
+</div>
+<hr>
+<div>
+    <select name="listDatos" id="listDatos" multiple>
+
+    </select>
+</div>
+
+<div id="chart">
+
+</div>
+
+</body>
+
+</html>
