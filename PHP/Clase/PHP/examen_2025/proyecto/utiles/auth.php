@@ -3,12 +3,12 @@ session_start();
 
 function verificarSesion() {
     if (!isset($_SESSION['usuario'])) {
-        header('Location: /login.php');
+        header('Location: ../proyecto/login.php');
         exit();
     }
 }
 
 function esAdministrador() {
-    return isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
+    return isset($_SESSION['rol']) && $_SESSION['rol'] === 'TOTAL';
 }
 ?>
