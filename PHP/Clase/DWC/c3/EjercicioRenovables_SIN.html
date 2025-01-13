@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Ejercicio Renovables</title>
+	<style type="text/css">
+		h2 {
+			text-align: center;
+			color: maroon;
+		}
+
+		.menuHorizontal {
+			margin-bottom: 2em;
+		}
+
+		.menuHorizontal ul {
+			display: flex;
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+
+		.menuHorizontal>ul>li {
+			margin: 0 .5em 0 .5em;
+		}
+
+		.menuHorizontal a {
+			display: block;
+			padding: 1em;
+			background-color: maroon;
+			background-color: pink;
+			color: #191C26;
+			text-decoration: none;
+		}
+
+		.menuHorizontal a:hover {
+			background-color: #CC673B;
+			color: white;
+		}
+
+		.menuHorizontal ul li ul {
+			display: none;
+			position: absolute;
+
+		}
+
+		.menuHorizontal ul li a:hover+ul,
+		.menuHorizontal ul li ul:hover {
+			display: flex;
+		}
+
+		.menuHorizontal>ul>li>a {
+			background-color: #F9B53C;
+			color: #191C26;
+		}
+
+		.menuHorizontal a[disabled] {
+			color: grey;
+			pointer-events: none;
+			cursor: default;
+		}
+	</style>
+	<link href="c3-0.7.20/c3.css" rel="stylesheet">
+	<script src="c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+	<script src="c3-0.7.20/c3.min.js"></script>
+
+	<script type="text/javascript">
+		document.addEventListener("DOMContentLoaded", function () {
+			const btLeerFicheroCSV = document.getElementById("btLeerFicheroCSV");
+			const btLeerFicheroJSON = document.getElementById("btLeerFicheroJSON");
+			const btGuardarDatosJSON = document.getElementById("btGuardarDatosJSON");
+			const btGuarSeleccionJSON = document.getElementById("btGuarSeleccionJSON");
+			const ficheroInput = document.getElementById("fichero");
+			const selDatos = document.getElementById("selDatos");
+			const graficadedatos = document.getElementById("grafico");
+			let data = [];
+
+
+			btLeerFicheroCSV.addEventListener("click", function () {
+				if (ficheroInput.files.length > 0) {
+					const file = ficheroInput.files[0];
+					if (file.type === "text/csv") {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							const contenido = e.target.result;
+							extraerCSV(contenido);
+						};
+						reader.readAsText(file);
+					} else {
+						alert("Selecciona archivo CSV");
+					}
+				}
+			});
+
+
+			btLeerFicheroJSON.addEventListener("click", function () {
+				if (ficheroInput.files.length > 0) {
+					const file = ficheroInput.files[0];
+					if (file.type === "application/json") {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							const contenido = e.target.result;
+							extraerJSON(contenido);
+						};
+						reader.readAsText(file);
+					} else {
+						alert("Selecciona archivo Json");
+					}
+				}
+			});
+
+
+			btGuardarDatosJSON.addEventListener("click", function () {
+				const datos = obtdata();
+				guardajson(datos, "datos.json");
+			});
+
+
+			btGuarSeleccionJSON.addEventListener("click", function () {
+				const seleccion = Array.from(selDatos.selectedOptions).map(opt => opt.value);
+				guardajson(seleccion, "seleccion.json");
+			});
+
+			function guardajson(datos, namearch) {
+				const blob = new Blob([JSON.stringify(datos, null, 2)], {type: "application/json"});
+				const enlace = document.createElement("a");
+				enlace.href = URL.createObjectURL(blob);
+				enlace.download = namearch;
+				enlace.click();
+			}
+
+			function extraerCSV(contenido) {
+				const filas = contenido.split("\n").map(fila => fila.split(","));
+				const data_agrupada = filas.reduce((acc, fila) => {
+					const [Entity, Year, Value] = fila;
+					if (!acc[Entity]) {
+						acc[Entity] = [];
+					}
+					acc[Entity].push({
+						year: parseInt(Year),
+						value: parseFloat(Value)
+					});
+					return acc;
+				}, {});
+
+				selDatos.innerHTML = "";
+				Object.keys(data_agrupada).forEach(pais => {
+					const opcion = document.createElement("option");
+					opcion.value = pais;
+					opcion.textContent = pais;
+					selDatos.appendChild(opcion);
+				});
+
+				selDatos.addEventListener("change", function () {
+					const seleccionados = Array.from(selDatos.selectedOptions).map(opt => opt.value);
+					const datosSeleccionados = seleccionados.map(pais => data_agrupada[pais]);
+					gengrafica(datosSeleccionados);
+				});
+
+				btGuardarDatosJSON.removeAttribute("disabled");
+				btGuarSeleccionJSON.removeAttribute("disabled");
+			}
+
+
+			function extraerJSON(datos) {
+				var datos = JSON.parse(datos), data_agrupada = datos.reduce((acc, dato) => {
+					const pais = dato.Entity;
+					if (!acc[pais]) {
+						acc[pais] = [];
+					}
+					acc[pais].push({
+						year: parseInt(dato.Year),
+						value: parseFloat(dato["Electricity from wind - TWh"])
+					});
+					return acc;
+				}, {});
+
+
+				selDatos.innerHTML = "";
+				Object.keys(data_agrupada).forEach(pais => {
+					const opcion = document.createElement("option");
+					opcion.value = pais;
+					opcion.textContent = pais;
+					selDatos.appendChild(opcion);
+				});
+
+
+				selDatos.addEventListener("change", function () {
+					const seleccionados = Array.from(selDatos.selectedOptions).map(opt => opt.value);
+					const datosSeleccionados = seleccionados.map(pais => data_agrupada[pais]);
+					gengrafica(datosSeleccionados);
+				});
+
+				btGuardarDatosJSON.removeAttribute("disabled");
+				btGuarSeleccionJSON.removeAttribute("disabled");
+			}
+
+			function obtdata() {
+				return Array.from(selDatos.options).map(opt => opt.textContent);
+			}
+
+			function gengrafica(datos) {
+				const columnas = datos.flatMap((data, index) => [
+					["x" + index, ...data.map(d => d.year)],
+					["electricidad" + index, ...data.map(d => d.value)]
+				]);
+
+				c3.generate({
+					bindto: graficadedatos,
+					data: {
+						xs: Object.fromEntries(datos.map((_, index) => ["electricidad" + index, "x" + index])),
+						columns: columnas,
+						type: "line"
+					},
+					axis: {
+						x: {
+							type: "category",
+							label: "Año"
+						},
+						y: {
+							label: "Electricidad (TWh)"
+						}
+					}
+				});
+			}
+
+
+		});
+	</script>
+
+</head>
+
+<body>
+<h2>Gráfico de Energía Eólica</h2>
+
+<nav class="menuHorizontal">
+	<ul>
+		<li>
+			<a id="btLeerFicheroCSV" href="#">Leer fichero .csv</a>
+		</li>
+		<li>
+			<a id="btLeerFicheroJSON" href="#">Leer fichero .json</a>
+		</li>
+		<li>
+			<a id="btGuardarDatosJSON" href="#" disabled>Guardar datos JSON</a>
+		</li>
+		<li>
+			<a id="btGuarSeleccionJSON" href="#" disabled>Guardar selección JSON</a>
+		</li>
+	</ul>
+</nav>
+
+<div>
+	<label for="fichero">Fichero: </label>
+	<input type="file" id="fichero" accept=".csv, .json" />
+</div>
+
+<br><br>
+<select id="selDatos" multiple size="15">
+	<option value="-1">Selecciona opción</option>
+</select>
+
+<br><br>
+
+<p>
+<div id="grafico"></div>
+</p>
+
+</body>
+
+</html>
