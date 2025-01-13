@@ -4,11 +4,10 @@ require_once '../utiles/config.php';
 require_once '../utiles/funciones.php';
 verificarSesion();
 
-// Conexión a la base de datos
 $conn = obtenerConexion();
 
-// Consulta para obtener los tenistas
-$query = "SELECT id, nombre, pais FROM tenistas";
+// Consulta para obtener los torneos
+$query = "SELECT id, nombre, ciudad, superficie FROM torneos";
 $result = $conn->query($query);
 
 // Verificar errores en la consulta
@@ -19,24 +18,24 @@ if (!$result) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Listado de Tenistas</title>
+    <title>Listado de Torneos</title>
     <link rel="stylesheet" type="text/css" href="/css/style.css">
 </head>
 <body>
 <div class="contenedor">
-    <h1>Listado de Tenistas</h1>
+    <h1>Listado de Torneos</h1>
     <table>
         <tr>
-            <th>ID</th>
             <th>Nombre</th>
-            <th>País</th>
+            <th>Ciudad</th>
+            <th>Superficie</th>
             <?php if (esAdministrador()) echo '<th>Acciones</th>'; ?>
         </tr>
-        <?php while ($tenista = $result->fetch_assoc()): ?>
+        <?php while ($torneo = $result->fetch_assoc()): ?>
             <tr>
-                <td><?= htmlspecialchars($tenista['id']) ?></td>
-                <td><?= htmlspecialchars($tenista['nombre']) ?></td>
-                <td><?= htmlspecialchars($tenista['pais']) ?></td>
+                <td><?= htmlspecialchars($torneo['nombre']) ?></td>
+                <td><?= htmlspecialchars($torneo['ciudad']) ?></td>
+                <td><?= htmlspecialchars($torneo['superficie']) ?></td>
                 <?php if (esAdministrador()): ?>
                     <td>
                         <a href="#">Editar</a> | <a href="#">Eliminar</a>

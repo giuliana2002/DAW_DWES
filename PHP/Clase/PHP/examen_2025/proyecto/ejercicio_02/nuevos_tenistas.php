@@ -1,16 +1,27 @@
 <?php
 require_once '../utiles/auth.php';
+require_once '../utiles/config.php';
+require_once '../utiles/funciones.php';
 verificarSesion();
+
 if (!esAdministrador()) {
     echo 'Acceso denegado';
     exit();
 }
 
-// Aquí procesaríamos el formulario para agregar un nuevo tenista
+$conn = obtenerConexion();
+
+// Procesar formulario para agregar nuevo tenista
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'];
-    $pais = $_POST['pais'];
-    // Lógica para insertar el nuevo tenista en la base de datos
+    $nombre = $conn->real_escape_string($_POST['nombre']);
+    $pais = $conn->real_escape_string($_POST['pais']);
+
+    $query = "INSERT INTO tenistas (nombre, pais) VALUES ('$nombre', '$pais')";
+    if ($conn->query($query)) {
+        echo "Tenista agregado correctamente.";
+    } else {
+        echo "Error al agregar tenista: " . $conn->error;
+    }
 }
 ?>
 <!DOCTYPE html>

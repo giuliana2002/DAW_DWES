@@ -1,13 +1,21 @@
 <?php
 require_once '../utiles/auth.php';
+require_once '../utiles/config.php';
+require_once '../utiles/funciones.php';
 verificarSesion();
 
-// Aquí se obtendrían los torneos ganados desde la base de datos
-$torneos = [
-    ['tenista' => 'Roger Federer', 'torneo' => 'Wimbledon', 'año' => 2017],
-    ['tenista' => 'Rafael Nadal', 'torneo' => 'Roland Garros', 'año' => 2020],
-];
+$conn = obtenerConexion();
 
+// Consulta para obtener los torneos ganados
+$query = "SELECT tenistas.nombre AS tenista, torneos.nombre AS torneo, torneos.anio 
+          FROM torneos 
+          JOIN tenistas ON torneos.tenista_id = tenistas.id";
+$result = $conn->query($query);
+
+// Verificar errores en la consulta
+if (!$result) {
+    die("Error en la consulta: " . $conn->error);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -24,13 +32,13 @@ $torneos = [
             <th>Torneo</th>
             <th>Año</th>
         </tr>
-        <?php foreach ($torneos as $torneo): ?>
+        <?php while ($torneo = $result->fetch_assoc()): ?>
             <tr>
-                <td><?= $torneo['tenista'] ?></td>
-                <td><?= $torneo['torneo'] ?></td>
-                <td><?= $torneo['año'] ?></td>
+                <td><?= htmlspecialchars($torneo['tenista']) ?></td>
+                <td><?= htmlspecialchars($torneo['torneo']) ?></td>
+                <td><?= htmlspecialchars($torneo['anio']) ?></td>
             </tr>
-        <?php endforeach; ?>
+        <?php endwhile; ?>
     </table>
 </div>
 </body>
