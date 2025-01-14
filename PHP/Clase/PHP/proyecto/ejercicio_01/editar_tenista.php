@@ -1,11 +1,13 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario'])) {
+require '../utiles/config.php';
+require '../utiles/auth.php';
+require '../utiles/funciones.php';
+
+if (!verificarSesionActiva()) {
     header('Location: login.php');
     exit;
 }
-require '../utiles/config.php';
-require '../utiles/funciones.php';
 
 $conexion = conectarDB();
 if (!$conexion) {
@@ -23,6 +25,10 @@ $id = $_GET['id'];
 // Obtener los datos del tenista
 $query = "SELECT * FROM tenistas WHERE id = ?";
 $stmt = $conexion->prepare($query);
+if (!$stmt) {
+    die("Error en la preparación de la consulta: " . $conexion->error);
+}
+
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $resultado = $stmt->get_result();
@@ -36,8 +42,8 @@ $tenista = $resultado->fetch_assoc();
 
 // Procesar el formulario de edición
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'] ?? '';
-    $apellidos = $_POST['apellidos'] ?? '';
+    $nombre = limpiarEntrada($_POST['nombre'] ?? '');
+    $apellidos = limpiarEntrada($_POST['apellidos'] ?? '');
     $altura = $_POST['altura'] ?? '';
     $mano = $_POST['mano'] ?? '';
     $anno_nacimiento = $_POST['anno_nacimiento'] ?? '';
@@ -45,13 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($nombre && $apellidos && $altura && $mano && $anno_nacimiento) {
         $updateQuery = "UPDATE tenistas SET nombre = ?, apellidos = ?, altura = ?, mano = ?, anno_nacimiento = ? WHERE id = ?";
         $updateStmt = $conexion->prepare($updateQuery);
+
+        if (!$updateStmt) {
+            die("Error en la preparación de la consulta: " . $conexion->error);
+        }
+
         $updateStmt->bind_param("ssissi", $nombre, $apellidos, $altura, $mano, $anno_nacimiento, $id);
 
         if ($updateStmt->execute()) {
             header("Location: listado_tenistas.php");
             exit;
         } else {
-            $error = "Error al actualizar el tenista.";
+            $error = "Error al actualizar el tenista: " . $updateStmt->error;
         }
     } else {
         $error = "Todos los campos son obligatorios.";

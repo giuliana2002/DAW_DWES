@@ -1,14 +1,19 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario'])) {
+require '../utiles/config.php';
+require '../utiles/auth.php';
+require '../utiles/funciones.php';
+
+if (!verificarSesionActiva()) {
     header('Location: login.php');
     exit;
 }
-$csrf_token = bin2hex(random_bytes(32));
-$_SESSION['csrf_token'] = $csrf_token;
 
-require '../utiles/config.php';
-require '../utiles/funciones.php';
+// Generar token CSRF solo si no existe
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 
 $conexion = conectarDB();
 if (!$conexion) {
@@ -19,6 +24,7 @@ $query = "SELECT tenistas.nombre AS tenista, torneos.nombre AS torneo, titulos.a
           FROM titulos
           JOIN tenistas ON titulos.tenista_id = tenistas.id
           JOIN torneos ON titulos.torneo_id = torneos.id";
+
 $resultado = $conexion->query($query);
 
 if (!$resultado) {
@@ -49,13 +55,14 @@ if (!$resultado) {
             <tr>
                 <td><?= htmlspecialchars($titulo['tenista']) ?></td>
                 <td><?= htmlspecialchars($titulo['torneo']) ?></td>
-                <td><?= $titulo['anio'] ?></td>
+                <td><?= htmlspecialchars($titulo['anio']) ?></td>
             </tr>
         <?php endwhile; ?>
         </tbody>
     </table>
     <br>
     <form method="POST" action="logout.php" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
         <button type="submit">Cerrar Sesión</button>
     </form>
 </div>

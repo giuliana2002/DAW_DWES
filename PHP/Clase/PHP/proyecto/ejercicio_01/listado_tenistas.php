@@ -1,42 +1,45 @@
 <?php
-session_start();
-if (!isset($_SESSION['usuario'])) {
+require '../utiles/init.php';
+
+if (!verificarSesionActiva()) {
     header('Location: login.php');
     exit;
 }
-$csrf_token = bin2hex(random_bytes(32));
-$_SESSION['csrf_token'] = $csrf_token;
 
-require '../utiles/config.php';
-require '../utiles/funciones.php';
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 
 $conexion = conectarDB();
-if (!$conexion) {
-    die("Error de conexión a la base de datos.");
-}
-
 $query = "SELECT * FROM tenistas";
 $resultado = $conexion->query($query);
 
-if (!$resultado) {
-    die("Error al obtener los datos de tenistas.");
-}
-
-// Procesar la acción de borrar
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
-    $id = $_POST['id'];
-    if ($id && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        $stmt = $conexion->prepare("DELETE FROM tenistas WHERE id = ?");
-        $stmt->bind_param("i", $id);
-        if ($stmt->execute()) {
-            // Redirigir al listado para evitar reenvíos del formulario
-            header("Location: listado_tenistas.php");
-            exit;
-        } else {
-            $error = "Error al borrar el tenista.";
-        }
+    $id = $_POST['id'] ?? null;
+    $token = $_POST['csrf_token'] ?? null;
+
+    if (!$id) {
+        echo "Error: ID no proporcionado.";
+    } elseif (!$token || !hash_equals($_SESSION['csrf_token'], $token)) {
+        echo "Error: Token CSRF no coincide.";
     } else {
-        $error = "Token CSRF inválido o falta el ID.";
+        $stmtTitulos = $conexion->prepare("DELETE FROM titulos WHERE tenista_id = ?");
+        $stmtTitulos->bind_param("i", $id);
+
+        if ($stmtTitulos->execute()) {
+            $stmtTenistas = $conexion->prepare("DELETE FROM tenistas WHERE id = ?");
+            $stmtTenistas->bind_param("i", $id);
+
+            if ($stmtTenistas->execute()) {
+                header("Location: listado_tenistas.php");
+                exit;
+            } else {
+                echo "Error al eliminar el tenista: " . $stmtTenistas->error;
+            }
+        } else {
+            echo "Error al eliminar los títulos asociados: " . $stmtTitulos->error;
+        }
     }
 }
 ?>
@@ -44,16 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/style.css">
     <title>Listado de Tenistas</title>
 </head>
 <body>
 <div class="contenedor">
     <h1>Listado de Tenistas</h1>
-    <?php if (!empty($error)): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
     <table border="1">
         <thead>
         <tr>
@@ -77,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar'])) {
                 <td><?= htmlspecialchars($tenista['mano']) ?></td>
                 <td><?= $tenista['anno_nacimiento'] ?></td>
                 <td>
-                    <a href="editar_tenista.php?id=<?= $tenista['id'] ?>" class="boton-editar">Editar</a>
+                    <a href="editar_tenista.php?id=<?= $tenista['id'] ?>">Editar</a>
                 </td>
                 <td>
                     <form method="POST" action="" style="display: inline;">

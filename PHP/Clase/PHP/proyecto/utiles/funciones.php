@@ -10,7 +10,15 @@
   * @param {string} $valor - Valor del campo recibido como parámetro
   * @return {PDO}
   */
-  function obtenerValorCampo(string $campo): string
+
+
+function limpiarEntrada($dato)
+{
+    return htmlspecialchars(trim($dato));
+}
+
+
+function obtenerValorCampo(string $campo): string
   {
       // Comprobamos si nos llega el nombre del campo en el REQUEST
       if (!isset($_REQUEST[$campo])) 
