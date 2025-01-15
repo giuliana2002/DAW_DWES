@@ -6,7 +6,8 @@
     padding: 1em;
 }
 
-.estilo_enlace, .confirmacion_borrar {
+.estilo_enlace,
+.confirmacion_borrar {
     text-decoration: none;
 }
 
