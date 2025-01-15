@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Examen 3. 1ª Evaluación. DWEC</title>
+    <style>
+        fieldset {
+            width: 400px;
+            margin-top: 2em;
+            margin-bottom: 1em;
+            margin-left: 1em;
+        }
+
+        fieldset label {
+            width: 4.5em;
+            display: inline-block;
+        }
+
+        .formDetalle {
+            visibility: hidden;
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            z-index: 11;
+            background-color: pink;
+            border: 2px solid maroon;
+            border-radius: 15px;
+            padding: 1em;
+            color: red;
+        }
+
+        .formDetalle div label {
+            display: block;
+            margin-top: .5em;
+        }
+
+        .formDetalle .btn {
+            display: block;
+            margin-top: 1em;
+        }
+
+        .ver {
+            visibility: visible;
+        }
+    </style>
+
+    <!-- Incluye las bibliotecas C3.js y D3.js -->
+    <link href="../c3/c3-0.7.20/c3.css" rel="stylesheet">
+    <script src="../c3/c3-0.7.20/docs/js/d3-5.8.2.min.js"></script>
+    <script src="../c3/c3-0.7.20/c3.min.js"></script>
+
+    <script type="text/javascript">
+        var url = "servidor.php";
+
+        async function pFetch(url, metodo, callback = null, param = "") {
+            metodo = metodo.toUpperCase();
+
+            try {
+                let response;
+                if (metodo === "GET") {
+                    if (param.trim().length > 0) {
+                        url += "?" + param;
+                    }
+                    response = await fetch(url);
+                } else if (metodo === "POST") {
+                    response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: param,
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (callback) {
+                    callback(data);
+                }
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        const creaFila = (objeto, tipo = "") => {
+            tipo = (tipo == "cabecera") ? "th" : "td";
+            var fila = document.createElement("tr");
+
+            let ordenColumnas = ["ID", "CANTIDAD", "CONCEPTO", "PRECIO", "TIPO_IVA"]
+
+            ordenColumnas.forEach(key => {
+                var col = document.createElement(tipo);
+                var cont = document.createTextNode(objeto[key]);
+                col.appendChild(cont);
+                fila.appendChild(col);
+            });
+
+            let importe = objeto.CANTIDAD * objeto.PRECIO;
+            let iva = importe * (objeto.TIPO_IVA / 100);
+            let total = importe + iva;
+            let tdIva = document.createElement(tipo);
+            let tdTotal = document.createElement(tipo);
+            tdIva.innerText = iva.toFixed(2);
+            tdTotal.innerText = total.toFixed(2);
+            fila.appendChild(tdIva);
+            fila.appendChild(tdTotal);
+
+            let tdEditar = document.createElement(tipo);
+            let btEditar = document.createElement("button");
+            btEditar.innerText = "Editar";
+            btEditar.dataset.idDetalle = objeto.ID;
+            btEditar.addEventListener("click", mostrarEditar)
+            tdEditar.appendChild(btEditar);
+            fila.appendChild(tdEditar);
+
+            let tdBorrar = document.createElement(tipo);
+            let btBorrar = document.createElement("button");
+            btBorrar.innerText = "Borrar";
+            btBorrar.dataset.idDetalle = objeto.ID;
+            btBorrar.addEventListener("click", borrarDetalle)
+            tdBorrar.appendChild(btBorrar);
+            fila.appendChild(tdBorrar);
+
+            return fila;
+        }
+
+        const llenarSelect = (e) => {
+            let sel = document.getElementById("factura");
+            sel.options.length = 1;
+
+            pFetch(url, "POST", (lista) => {
+                for (let i = 0; i < lista.length; i++) {
+                    op = document.createElement("option");
+                    op.innerText = lista[i].NOMBRE;
+                    op.value = lista[i].ID;
+                    sel.options.add(op);
+                }
+            }, JSON.stringify({ servicio: "facturas" }))
+        }
+
+        const sumasTotales = function (datos) {
+            let tIva = document.getElementById("Tiva");
+            let tTotal = document.getElementById("Ttotal");
+
+            let sumaIva = 0;
+            let sumaTotal = 0;
+            datos.forEach(d => {
+                let importe = d.CANTIDAD * d.PRECIO;
+                let iva = importe * (d.TIPO_IVA / 100);
+                let total = importe + iva;
+                sumaIva += iva;
+                sumaTotal += total;
+            })
+
+            tIva.innerText = sumaIva.toFixed(2);
+            tTotal.innerText = sumaTotal.toFixed(2);
+        }
+
+        function verDetalle(datos) {
+            let cuerpo = document.getElementById("filas_tabla");
+            cuerpo.innerHTML = "";
+            datos.forEach(d => {
+                document.getElementById("filas_tabla").appendChild(creaFila(d));
+            })
+        }
+
+        const mostrarAnyadir = (e) => {
+            if (document.getElementById("factura").value != -1) {
+                let form = document.getElementById("formDetalle");
+                form.className = "formDetalle ver";
+
+                document.getElementById("league").innerText = "Añadir detalle";
+                document.getElementById("btAnade").innerText = "Añadir línea de detalle";
+            } else {
+                alert("Antes debes seleccionar una factura.")
+            }
+
+        }
+
+        function mostrarEditar() {
+            document.getElementById("btAnade").dataset.idld = this.dataset.idDetalle;
+            let form = document.getElementById("formDetalle");
+            form.className = "formDetalle ver";
+
+            document.getElementById("league").innerText = "Editar";
+            document.getElementById("btAnade").innerText = "Modificar línea de detalle";
+
+            pFetch(url, "POST", (datos) => {
+                document.getElementById("cantidad").value = datos.CANTIDAD;
+                document.getElementById("concepto").value = datos.CONCEPTO;
+                document.getElementById("precio").value = datos.PRECIO;
+                document.getElementById("tipo_iva").value = datos.TIPO_IVA;
+            }, { servicio: "selDetalleID", id: document.getElementById("btAnade").dataset.idld })
+        }
+
+        function anyadeOEdita() {
+            if (document.getElementById("btAnade").dataset.idld == -1) {
+                let cantidad = document.getElementById("cantidad").value;
+                let concepto = document.getElementById("concepto").value;
+                let precio = document.getElementById("precio").value;
+                let tipoIva = document.getElementById("tipo_iva").value;
+
+                if (cantidad == "" || concepto == "" || precio == "" || tipoIva == "") {
+                    alert("Debes completar todos los campos");
+                } else {
+                    pFetch(url, "POST", (datos) => {
+                        verDetalle(datos);
+                        sumasTotales(datos);
+                    }, JSON.stringify({ servicio: "anade", idFactura: document.getElementById("factura").value, cantidad: cantidad, precio: precio, concepto: concepto, tipo_iva: tipoIva }))
+                }
+
+            } else {
+                var idDetalleEditar = document.getElementById("btAnade").dataset.idld;
+
+                let cantidad = document.getElementById("cantidad").value;
+                let concepto = document.getElementById("concepto").value;
+                let precio = document.getElementById("precio").value;
+                let tipoIva = document.getElementById("tipo_iva").value;
+
+                if (cantidad == "" || concepto == "" || precio == "" || tipoIva == "") {
+                    alert("Debes completar todos los campos");
+                } else {
+                    pFetch(url, "POST", (datos) => {
+                        verDetalle(datos);
+                        sumasTotales(datos);
+                        document.getElementById("btAnade").dataset.idld = -1;
+                    }, JSON.stringify({ servicio: "modificarDetalle", id: idDetalleEditar, idFactura: document.getElementById("factura").value, cantidad: cantidad, precio: precio, concepto: concepto, tipo_iva: tipoIva }))
+                }
+            }
+        }
+
+        const borrarDetalle = (e) => {
+            let detalle = e.currentTarget.dataset.idDetalle;
+
+            if (confirm("¿Desea borrar el detalle con ID " + detalle + "?")) {
+                pFetch(url, "POST", (datos) => {
+                    verDetalle(datos);
+                    sumasTotales(datos);
+                }, JSON.stringify({ servicio: "borra", id: detalle, idFactura: document.getElementById("factura").value }))
+            }
+        }
+
+        const cancelar = (e) => {
+            document.getElementById("formDetalle").className = "formDetalle";
+        }
+
+        // Función para generar la gráfica
+        const generarGrafica = () => {
+            let idFactura = document.getElementById("factura").value;
+            if (idFactura == -1) {
+                alert("Antes debes seleccionar una factura.");
+                return;
+            }
+
+            pFetch(url, "POST", (datos) => {
+                let conceptos = datos.map(d => d.CONCEPTO);
+                let cantidades = datos.map(d => d.CANTIDAD);
+                let precios = datos.map(d => d.PRECIO);
+
+                var chart = c3.generate({
+                    bindto: '#grafica',
+                    data: {
+                        columns: [
+                            ['Cantidad', ...cantidades],
+                            ['Precio', ...precios]
+                        ],
+                        type: 'bar'
+                    },
+                    axis: {
+                        x: {
+                            type: 'category',
+                            categories: conceptos
+                        }
+                    }
+                });
+            }, JSON.stringify({ servicio: "detalle", idFactura: idFactura }));
+        }
+
+        window.onload = () => {
+            llenarSelect();
+            document.getElementById("factura").onchange = function () {
+                pFetch(url, "POST", (datos) => {
+                    verDetalle(datos);
+                    sumasTotales(datos);
+                }, JSON.stringify({ servicio: "detalle", idFactura: this.value }))
+            }
+            document.getElementById("btNuevoDetalle").addEventListener("click", mostrarAnyadir);
+            document.getElementById("btAnade").addEventListener("click", (e) => {
+                anyadeOEdita(e);
+                cancelar(e);
+            })
+            document.getElementById("btCancelar").addEventListener("click", cancelar)
+            document.getElementById("btGenerarGrafica").addEventListener("click", generarGrafica);
+        }
+    </script>
+</head>
+
+<body>
+
+<h1>Examen 3. 1ª Evaluación. DWEC</h1>
+<h3>Consulta de Facturas</h3>
+<div>
+    <p>
+        <select id="factura">
+            <option value="-1">Selecciona una factura para consultar su detalle</option>
+        </select>
+    </p>
+</div>
+<div>
+    Detalle de la factura:
+
+    <br><br>
+    <button class="btn" id="btNuevoDetalle" type="button">Nuevo Detalle</button>
+    <button class="btn" id="btGenerarGrafica" type="button">Generar Gráfica</button>
+
+    <p>
+    <table id="detalle" border="1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>CANTIDAD</th>
+            <th>CONCEPTO</th>
+            <th>PRECIO</th>
+            <th>Tipo IVA</th>
+            <th>IVA</th>
+            <th>TOTAL</th>
+            <th>Modificar</th>
+            <th>Borrar</th>
+        </tr>
+        </thead>
+
+        <tbody id="filas_tabla">
+
+
+        </tbody>
+
+
+        <tfoot>
+        <tr>
+            <td colspan="5">TOTALES: </td>
+            <td id="Tiva">suma iva</td>
+            <td id="Ttotal">suma TOTAL</td>
+        </tr>
+        </tfoot>
+    </table>
+    </p>
+</div>
+
+<div div id="formDetalle" class="formDetalle">
+    <fieldset>
+        <legend id="league">Añadir detalle</legend>
+        <p>
+            <label for="cantidad">Cantidad: </label>
+            <input type="text" id="cantidad" size="3" value="5" />
+        </p>
+        <p>
+            <label for="concepto">Concepto: </label>
+            <input type="text" id="concepto" size="44" value="Nuevo detalle" />
+        </p>
+        <p>
+            <label for="precio">precio: </label>
+            <input type="text" id="precio" size="4" value="25" /> €
+        </p>
+
+        <p>
+            <label for="tipo_iva">Tipo IVA: </label>
+            <input type="text" id="tipo_iva" size="2" value="21" /> %
+        </p>
+
+    </fieldset>
+
+    <button id="btAnade" data-idld="-1">Añadir línea de detalle</button>
+
+    <button id="btCancelar">Cancelar</button>
+
+</div>
+
+<!-- Contenedor para la gráfica -->
+<div id="grafica"></div>
+
+</body>
+
+</html>
