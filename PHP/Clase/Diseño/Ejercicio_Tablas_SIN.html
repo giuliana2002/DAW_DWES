@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tablas Responsiva y No Responsiva</title>
+  <!-- Enlace al CSS de Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Tabla Responsiva</h2>
+  <!-- Tabla Responsiva -->
+  <div class="table-responsive">
+    <table class="table table-bordered text-center">
+      <thead class="table-danger">
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Apellidos</th>
+        <th>Edad</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="table-warning">
+        <td>1</td>
+        <td>Sven Olof</td>
+        <td>Joachim Palme</td>
+        <td>86</td>
+      </tr>
+      <tr class="table-info">
+        <td>2</td>
+        <td>Giovanni</td>
+        <td>Falcone</td>
+        <td>73</td>
+      </tr>
+      <tr class="table-success">
+        <td>3</td>
+        <td>Paolo Emanuele</td>
+        <td>Borsellino</td>
+        <td>72</td>
+      </tr>
+      <tr class="table-primary">
+        <td>4</td>
+        <td>Salvador Guillermo</td>
+        <td>Allende Gossens</td>
+        <td>104</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="text-center mt-5 mb-4">Tabla No Responsiva (con desplazamiento horizontal)</h2>
+  <!-- Tabla No Responsiva -->
+  <div style="overflow-x: auto; width: 100%; max-width: 100%;">
+    <table class="table table-bordered text-center">
+      <thead class="table-danger">
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Apellidos</th>
+        <th>Edad</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="table-warning">
+        <td>1</td>
+        <td>Sven Olof</td>
+        <td>Joachim Palme</td>
+        <td>86</td>
+      </tr>
+      <tr class="table-info">
+        <td>2</td>
+        <td>Giovanni</td>
+        <td>Falcone</td>
+        <td>73</td>
+      </tr>
+      <tr class="table-success">
+        <td>3</td>
+        <td>Paolo Emanuele</td>
+        <td>Borsellino</td>
+        <td>72</td>
+      </tr>
+      <tr class="table-primary">
+        <td>4</td>
+        <td>Salvador Guillermo</td>
+        <td>Allende Gossens</td>
+        <td>104</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Enlace al JS de Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
