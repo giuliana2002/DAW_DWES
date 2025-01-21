@@ -13,7 +13,7 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute([':id' => $id]);
 
-        header('Location: campeones_2.php');
+        header('Location: campeones_3.php');
         exit;
     } else {
         echo "ID no proporcionado.";

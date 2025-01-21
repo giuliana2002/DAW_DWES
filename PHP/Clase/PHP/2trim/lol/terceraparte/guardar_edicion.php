@@ -24,7 +24,7 @@ try {
         ]);
 
 
-        header('Location: campeones_2.php');
+        header('Location: campeones_3.php');
         exit;
     } else {
         echo "Datos incompletos.";
