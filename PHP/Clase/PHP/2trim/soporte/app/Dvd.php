@@ -13,9 +13,9 @@ class Dvd extends Soporte {
     }
 
     public function muestraResumen() {
-        echo "<br><strong>{$this->titulo}</strong>";
-        echo "<br>{$this->precio} € (IVA no incluido)";
-        echo "<br>Idiomas: {$this->idiomas}";
-        echo "<br>Formato Pantalla: {$this->formatoPantalla}";
+        echo "<br><strong>$this->titulo</strong>";
+        echo "<br>$this->precio € (IVA no incluido)";
+        echo "<br>Idiomas: $this->idiomas";
+        echo "<br>Formato Pantalla: $this->formatoPantalla";
     }
 }

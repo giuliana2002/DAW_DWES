@@ -14,22 +14,24 @@ class Juego extends Soporte {
         $this->maxNumJugadores = $maxNumJugadores;
     }
 
-    public function muestraJugadoresPosibles() {
+    public function muestraJugadoresPosibles(): void
+    {
         if ($this->minNumJugadores == $this->maxNumJugadores) {
             if ($this->minNumJugadores == 1) {
                 echo "Para un jugador";
             } else {
-                echo "Para {$this->minNumJugadores} jugadores";
+                echo "Para $this->minNumJugadores jugadores";
             }
         } else {
-            echo "De {$this->minNumJugadores} a {$this->maxNumJugadores} jugadores";
+            echo "De $this->minNumJugadores a $this->maxNumJugadores jugadores";
         }
     }
 
-    public function muestraResumen() {
-        echo "<br><strong>{$this->titulo}</strong>";
-        echo "<br>{$this->precio} € (IVA no incluido)";
-        echo "<br>Juego para: {$this->consola}";
+    public function muestraResumen(): void
+    {
+        echo "<br><strong>$this->titulo</strong>";
+        echo "<br>$this->precio € (IVA no incluido)";
+        echo "<br>Juego para: $this->consola";
         echo "<br>";
         $this->muestraJugadoresPosibles();
     }

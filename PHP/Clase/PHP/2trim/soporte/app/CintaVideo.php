@@ -11,8 +11,8 @@ class CintaVideo extends Soporte {
     }
 
     public function muestraResumen() {
-        echo "<br><strong>{$this->titulo}</strong>";
-        echo "<br>{$this->precio} € (IVA no incluido)";
-        echo "<br>Duración: {$this->duracion} minutos";
+        echo "<br><strong>$this->titulo</strong>";
+        echo "<br>$this->precio € (IVA no incluido)";
+        echo "<br>Duración: $this->duracion minutos";
     }
 }

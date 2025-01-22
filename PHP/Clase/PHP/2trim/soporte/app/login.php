@@ -21,6 +21,6 @@ if (isset($users[$user]) && $users[$user] === $password) {
     }
 } else {
     $_SESSION['error'] = 'Usuario o contraseña incorrectos';
-    header('Location: ../test/index.php');
+    header('Location: ../test/indexx.php');
 }
 exit();

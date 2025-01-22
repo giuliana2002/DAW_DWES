@@ -4,7 +4,7 @@ use Dwes\ProyectoVideoclub\login;
 use Dwes\ProyectoVideoclub\logout;
 session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user'] !== 'admin') {
-    header('Location: index.php');
+    header('Location: indexx.php');
     exit();
 }
 

@@ -6,8 +6,8 @@ use Dwes\ProyectoVideoclub\Dvd;
 use Dwes\ProyectoVideoclub\Juego;
 use Dwes\ProyectoVideoclub\Cliente;
 
-$cliente1 = new Cliente("Bruce Wayne", 23);
-$cliente2 = new Cliente("Clark Kent", 33);
+$cliente1 = new Cliente("Bruce Wayne", 23, 3);
+$cliente2 = new Cliente("Clark Kent", 33, 3);
 
 echo "<br>El identificador del cliente 1 es: " . $cliente1->getNumero();
 echo "<br>El identificador del cliente 2 es: " . $cliente2->getNumero();
